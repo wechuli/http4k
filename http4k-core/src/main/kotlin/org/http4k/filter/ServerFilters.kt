@@ -264,7 +264,7 @@ object ServerFilters {
      * Initialise a RequestContext for each request which passes through the Filter stack,
      */
     object InitialiseRequestContext {
-        operator fun invoke(contexts: Store<RequestContext>): Filter = Filter { next ->
+        operator fun invoke(contexts: Store<RequestContext>) = Filter { next ->
             {
                 val context = RequestContext()
                 try {
@@ -295,7 +295,7 @@ object ServerFilters {
     object ReplaceResponseContentsWithStaticFile {
         operator fun invoke(loader: ResourceLoader = Classpath(),
                             toResourceName: (Response) -> String? = { if (it.status.successful) null else it.status.code.toString() }
-        ): Filter = Filter { next ->
+        ) = Filter { next ->
             {
                 val response = next(it)
                 toResourceName(response)

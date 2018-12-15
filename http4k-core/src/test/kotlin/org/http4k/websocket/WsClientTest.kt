@@ -23,15 +23,15 @@ class WsClientTest {
         val throwable = mutableListOf<Throwable>()
         val closed = AtomicReference<WsStatus>()
 
-        override fun invoke(p1: Websocket) {
-            websocket = p1
-            p1.onMessage {
+        override suspend fun invoke(ws: Websocket) {
+            websocket = ws
+            websocket.onMessage {
                 messages += it
             }
-            p1.onClose {
+            websocket.onClose {
                 closed.set(it)
             }
-            p1.onError {
+            websocket.onError {
                 throwable.add(it)
             }
         }
@@ -61,8 +61,8 @@ class WsClientTest {
 
     @Test
     fun `sends inbound messages to the client`() {
-        val client = WsHandler {
-            { ws: Websocket ->
+        val client = WsHandler { _: Request ->
+            WsConsumer { ws: Websocket ->
                 ws.send(message)
                 ws.close(NEVER_CONNECTED)
             }
@@ -74,8 +74,8 @@ class WsClientTest {
 
     @Test
     fun `closed websocket throws when read attempted`() {
-        val client = WsHandler {
-            { ws: Websocket ->
+        val client = WsHandler { _: Request ->
+            WsConsumer { ws: Websocket ->
                 ws.close(NEVER_CONNECTED)
             }
         }.testWsClient(Request(GET, "/"))!!
@@ -85,10 +85,9 @@ class WsClientTest {
 
     @Test
     fun `throws for no match`() {
-        assertThat(
-            object : WsHandler {
-                override fun invoke(request: Request): WsConsumer? = null
-            }.testWsClient(Request(GET, "/"))
-            , absent())
+        assertThat(object : WsHandler {
+            override suspend fun invoke(request: Request): WsConsumer? = null
+        }.testWsClient(Request(GET, "/"))
+                , absent())
     }
 }

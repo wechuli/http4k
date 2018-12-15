@@ -37,7 +37,7 @@ class ContractRoute internal constructor(val method: Method,
     internal fun toRouter(contractRoot: PathSegments) = object : Router {
         override fun toString(): String = "${method.name}: ${spec.describe(contractRoot)}"
 
-        override fun match(request: Request): RouterMatch =
+        override suspend fun match(request: Request): RouterMatch =
             if ((request.method == OPTIONS || request.method == method) && request.pathSegments().startsWith(spec.pathFn(contractRoot))) {
                 try {
                     request.without(spec.pathFn(contractRoot))

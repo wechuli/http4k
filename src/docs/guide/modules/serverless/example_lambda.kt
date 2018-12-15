@@ -21,11 +21,11 @@ object TweetEchoLambda : AppLoader {
     }
 }
 
-fun main() {
+suspend fun main() {
 
     // Launching your Lambda Function locally - by simply providing the operating ENVIRONMENT map as would
     // be configured on AWS.
-    fun runLambdaLocally() {
+    suspend fun runLambdaLocally() {
         val app: HttpHandler = TweetEchoLambda(mapOf())
         val localLambda = app.asServer(SunHttp(8000)).start()
 

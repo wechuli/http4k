@@ -32,14 +32,14 @@ internal data class StaticRoutingHttpHandler(
     private val handlerNoFilter = ResourceLoadingHandler(pathSegments, resourceLoader)
     private val handlerWithFilter = filter.then(handlerNoFilter)
 
-    override fun match(request: Request): RouterMatch = handlerNoFilter(request).let {
+    override suspend fun match(request: Request): RouterMatch = handlerNoFilter(request).let {
         if (it.status != NOT_FOUND)
             MatchingHandler(filter.then { _: Request -> it })
         else
             Unmatched
     }
 
-    override fun invoke(request: Request): Response = handlerWithFilter(request)
+    override suspend fun invoke(request: Request): Response = handlerWithFilter(request)
 }
 
 
@@ -48,7 +48,7 @@ internal class ResourceLoadingHandler(
     private val resourceLoader: Router
 ) : HttpHandler {
 
-    override fun invoke(request: Request): Response =
+    override suspend fun invoke(request: Request): Response =
         if (request.method == GET && request.uri.path.startsWith(pathSegments))
             when (val matchResult = resourceLoader.match(request.uri(of(convertPath(request.uri.path))))) {
                 is MatchingHandler -> matchResult(request)

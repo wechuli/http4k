@@ -5,6 +5,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -46,7 +47,7 @@ class GenerateAccessTokenTest {
     private val handler = GenerateAccessToken(codes, DummyAccessTokens(), handlerClock, DummyIdTokens(), DummyRefreshTokens(), JsonResponseErrorRenderer(json), GrantTypesConfiguration.default(ClientSecretAccessTokenRequestAuthentication(clientValidator)))
 
     @Test
-    fun `generates a dummy token`() {
+    fun `generates a dummy token`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "authorization_code")
@@ -131,7 +132,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `generates dummy access_token and id_token`() {
+    fun `generates dummy access_token and id_token`() = runBlocking {
         val codeForIdTokenRequest = codes.create(request, authRequest.copy(responseType = CodeIdToken, scopes = listOf("openid")), Response(OK)).get()
 
         val response = handler(Request(POST, "/token")
@@ -149,7 +150,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `generates dummy token for client credentials grant type`() {
+    fun `generates dummy token for client credentials grant type`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "client_credentials")
@@ -161,7 +162,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles invalid grant_type`() {
+    fun `handles invalid grant_type`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "something_else")
@@ -175,7 +176,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles invalid client credentials`() {
+    fun `handles invalid client credentials`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "authorization_code")
@@ -189,7 +190,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles expired code`() {
+    fun `handles expired code`() = runBlocking {
         handlerClock.advance(1, SECONDS)
 
         val expiredCode = codes.create(request, authRequest, Response(OK)).get()
@@ -207,7 +208,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles client id different from one in authorization code`() {
+    fun `handles client id different from one in authorization code`() = runBlocking {
         val storedCode = codes.create(request, authRequest.copy(client = ClientId("different client")), Response(OK)).get()
 
         val response = handler(Request(POST, "/token")
@@ -223,7 +224,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles redirectUri different from one in authorization code`() {
+    fun `handles redirectUri different from one in authorization code`() = runBlocking {
         val storedCode = codes.create(request, authRequest.copy(redirectUri = Uri.of("somethingelse")), Response(OK)).get()
 
         val response = handler(Request(POST, "/token")
@@ -239,7 +240,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles already used authentication code`() {
+    fun `handles already used authentication code`() = runBlocking {
         val handler = GenerateAccessToken(codes, ErroringAccessTokens(AuthorizationCodeAlreadyUsed), handlerClock, DummyIdTokens(), DummyRefreshTokens(), JsonResponseErrorRenderer(json), GrantTypesConfiguration.default(ClientSecretAccessTokenRequestAuthentication(clientValidator)))
         val request = Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
@@ -254,7 +255,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `correctly returns documentation uri if provided`() {
+    fun `correctly returns documentation uri if provided`() = runBlocking {
         val documentationUri = "SomeUri"
         val handler = GenerateAccessToken(codes, ErroringAccessTokens(AuthorizationCodeAlreadyUsed), handlerClock, DummyIdTokens(), DummyRefreshTokens(), JsonResponseErrorRenderer(json, documentationUri), GrantTypesConfiguration.default(ClientSecretAccessTokenRequestAuthentication(clientValidator)))
         val request = Request(POST, "/token")
@@ -270,7 +271,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `handles grant type not in configuration`() {
+    fun `handles grant type not in configuration`() = runBlocking {
         val handler = GenerateAccessToken(codes, ErroringAccessTokens(AuthorizationCodeAlreadyUsed), handlerClock, DummyIdTokens(), DummyRefreshTokens(), JsonResponseErrorRenderer(json), GrantTypesConfiguration(emptyMap()))
 
         val response = handler(Request(POST, "/token")

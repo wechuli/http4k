@@ -6,6 +6,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.anything
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.apache.http.impl.io.EmptyInputStream
 import org.http4k.core.ContentType.Companion.TEXT_PLAIN
 import org.http4k.core.MemoryRequest
@@ -33,12 +34,12 @@ class NewResourceLoadingHandlerTest {
     private val now = Instant.parse("2018-08-09T23:06:00Z")
 
     @Test
-    fun `no resource returns NOT_FOUND`() {
+    fun `no resource returns NOT_FOUND`() = runBlocking {
         assertThat(handler(MemoryRequest(GET, Uri.of("/root/nosuch"))), equalTo(Response(NOT_FOUND)))
     }
 
     @Test
-    fun `returns content, content type, length and body`() {
+    fun `returns content, content type, length and body`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, lastModified = now, etag = ETag("etag-value", weak = true))
         assertThat(
             handler(Request(GET, Uri.of("/root/file.txt"))),
@@ -53,7 +54,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns no length and last modified if null from resource`() {
+    fun `returns no length and last modified if null from resource`() = runBlocking {
         resources["/file.txt"] = IndeterminateLengthResource()
         assertThat(
             handler(Request(GET, Uri.of("/root/file.txt"))),
@@ -66,7 +67,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns content if resource is modified by time`() {
+    fun `returns content if resource is modified by time`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, lastModified = now)
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -79,7 +80,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns NOT_MODIFIED if resource is not modified by time`() {
+    fun `returns NOT_MODIFIED if resource is not modified by time`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, lastModified = now)
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -100,7 +101,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns content if no last modified property`() {
+    fun `returns content if no last modified property`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, lastModified = null)
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -113,7 +114,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns content for incorrect date format`() {
+    fun `returns content for incorrect date format`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN)
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -125,7 +126,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns content if resource does not match etag`() {
+    fun `returns content if resource does not match etag`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, etag = ETag("etag-value", weak = true))
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -138,7 +139,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns NOT_MODIFIED if resource does match etag`() {
+    fun `returns NOT_MODIFIED if resource does match etag`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, etag = ETag("etag-value", weak = true))
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -167,7 +168,7 @@ class NewResourceLoadingHandlerTest {
     }
 
     @Test
-    fun `returns content if no etag property`() {
+    fun `returns content if no etag property`() = runBlocking {
         resources["/file.txt"] = InMemoryResource("content", TEXT_PLAIN, etag = null)
         assertThat(
             handler(MemoryRequest(GET, Uri.of("/root/file.txt"),
@@ -185,7 +186,7 @@ private class IndeterminateLengthResource : Resource {
 }
 
 private class InMemoryResourceLoader(val resources: Map<String, Resource>) : Router {
-    override fun match(request: Request): RouterMatch = resources[request.uri.path]?.let {
+    override suspend fun match(request: Request): RouterMatch = resources[request.uri.path]?.let {
         RouterMatch.MatchingHandler(it)
     } ?: RouterMatch.Unmatched
 }

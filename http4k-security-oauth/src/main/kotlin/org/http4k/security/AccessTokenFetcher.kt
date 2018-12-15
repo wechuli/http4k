@@ -18,7 +18,7 @@ class AccessTokenFetcher(
     private val providerConfig: OAuthProviderConfig,
     private val accessTokenFetcherAuthenticator: AccessTokenFetcherAuthenticator
 ) {
-    fun fetch(code: String): AccessTokenDetails? = api(Request(POST, providerConfig.tokenPath)
+    suspend fun fetch(code: String): AccessTokenDetails? = api(Request(POST, providerConfig.tokenPath)
         .with(CONTENT_TYPE of APPLICATION_FORM_URLENCODED)
         .form("grant_type", "authorization_code")
         .form("redirect_uri", callbackUri.toString())

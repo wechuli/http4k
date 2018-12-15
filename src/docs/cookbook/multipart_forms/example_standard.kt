@@ -14,7 +14,7 @@ import org.http4k.lens.MultipartFormFile
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
-fun main() {
+suspend fun main() {
 
     // extract the body from the request and then the fields/files from it
     val server = HttpHandler { r: Request ->

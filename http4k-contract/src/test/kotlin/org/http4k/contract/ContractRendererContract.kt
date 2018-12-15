@@ -2,6 +2,7 @@ package org.http4k.contract
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.contract.security.ApiKeySecurity
 import org.http4k.contract.security.AuthCodeOAuthSecurity
 import org.http4k.contract.security.BasicAuthSecurity
@@ -76,13 +77,13 @@ abstract class ContractRendererContract<NODE>(private val json: Json<NODE>, prot
     }
 
     @Test
-    open fun `renders as expected`(approver: Approver) {
+    open fun `renders as expected`(approver: Approver) = runBlocking {
         val customBody = json.body("the body of the message").toLens()
 
         val router = "/basepath" bind contract {
             renderer = rendererToUse
             security = ApiKeySecurity(Query.required("the_api_key"), { true })
-            routes += "/nometa" bindContract GET to { Response(OK) }
+            routes += "/nometa" bindContract GET to HttpHandler { Response(OK) }
             routes += "/descriptions" meta {
                 summary = "endpoint"
                 description = "some rambling description of what this thing actually does"
@@ -90,7 +91,7 @@ abstract class ContractRendererContract<NODE>(private val json: Json<NODE>, prot
                 tags += Tag("tag3")
                 tags += Tag("tag1")
                 markAsDeprecated()
-            } bindContract GET to { Response(OK) }
+            } bindContract GET to HttpHandler { Response(OK) }
             routes += "/paths" / Path.of("firstName") / "bertrand" / Path.boolean().of("age") bindContract POST to { a, _, _ -> HttpHandler { Response(OK).body(a) } }
             routes += "/queries" meta {
                 queries += Query.boolean().required("b", "booleanQuery")
@@ -129,7 +130,7 @@ abstract class ContractRendererContract<NODE>(private val json: Json<NODE>, prot
                 receiving(json.body("json").toLens() to json {
                     array(obj("aNumberField" to number(123)))
                 })
-            } bindContract POST to { Response(OK) }
+            } bindContract POST to { _: Request -> Response(OK) }
             routes += "/basic_auth" meta {
                 security = BasicAuthSecurity("realm", credentials)
             } bindContract POST to { Response(OK) }

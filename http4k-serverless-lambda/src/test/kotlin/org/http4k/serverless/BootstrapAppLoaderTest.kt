@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.isA
 import com.natpryce.hamkrest.throws
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.RequestContexts
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test
 
 class BootstrapAppLoaderTest {
     @Test
-    fun `loads the expected app if it implements the AppLoader interface`() {
+    fun `loads the expected app if it implements the AppLoader interface`() = runBlocking {
         val app = BootstrapAppLoader(mapOf(HTTP4K_BOOTSTRAP_CLASS to TestApp::class.java.name), RequestContexts())
         assertThat(app(Request(GET, "/")), hasStatus(CREATED).and(hasHeader(HTTP4K_BOOTSTRAP_CLASS, TestApp::class.java.name)))
     }
@@ -32,14 +33,14 @@ class BootstrapAppLoaderTest {
     }
 
     @Test
-    fun `complains if the configured class is not found`() {
+    fun `complains if the configured class is not found`() = runBlocking {
         assertThat({
             BootstrapAppLoader(mapOf(HTTP4K_BOOTSTRAP_CLASS to "java.lang.NotAnApp"), RequestContexts())
         }, throws(isA<CouldNotFindAppLoaderException>()))
     }
 
     @Test
-    fun `complains if the configured class is not an AppLoader`() {
+    fun `complains if the configured class is not an AppLoader`() = runBlocking {
         assertThat({
             BootstrapAppLoader(mapOf(HTTP4K_BOOTSTRAP_CLASS to "java.lang.String"), RequestContexts())
         }, throws(isA<InvalidAppLoaderException>()))

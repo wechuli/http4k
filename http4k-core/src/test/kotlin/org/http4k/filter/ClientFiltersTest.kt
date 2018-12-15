@@ -6,7 +6,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.isA
 import com.natpryce.hamkrest.present
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
+import org.http4k.core.HttpHandler
 import org.http4k.core.MemoryRequest
 import org.http4k.core.MemoryResponse
 import org.http4k.core.Method.GET
@@ -37,7 +39,7 @@ import org.junit.jupiter.api.fail
 import java.util.concurrent.atomic.AtomicReference
 
 class ClientFiltersTest {
-    val server = { request: Request ->
+    val server = HttpHandler { request: Request ->
         when (request.uri.path) {
             "/redirect" -> Response(FOUND).header("location", "/ok")
             "/loop" -> Response(FOUND).header("location", "/loop")
@@ -53,43 +55,43 @@ class ClientFiltersTest {
     private val followRedirects = ClientFilters.FollowRedirects().then(server)
 
     @Test
-    fun `does not follow redirect by default`() {
+    fun `does not follow redirect by default`() = runBlocking {
         val defaultClient = server
         assertThat(defaultClient(Request(GET, "/redirect")), equalTo(Response(FOUND).header("location", "/ok")))
     }
 
     @Test
-    fun `follows redirect for temporary redirect response`() {
+    fun `follows redirect for temporary redirect response`() = runBlocking {
         assertThat(followRedirects(Request(GET, "/redirect")), equalTo(Response(OK).body("ok")))
     }
 
     @Test
-    fun `follows redirect for post`() {
+    fun `follows redirect for post`() = runBlocking {
         assertThat(followRedirects(Request(POST, "/redirect")), equalTo(Response(OK).body("ok")))
     }
 
     @Test
-    fun `follows redirect for put`() {
+    fun `follows redirect for put`() = runBlocking {
         assertThat(followRedirects(Request(PUT, "/redirect")), equalTo(Response(OK).body("ok")))
     }
 
     @Test
-    fun `supports absolute redirects`() {
+    fun `supports absolute redirects`() = runBlocking {
         assertThat(followRedirects(Request(GET, "/absolute-redirect")), equalTo(Response(OK).body("absolute")))
     }
 
     @Test
-    fun `discards query parameters in relative redirects`() {
+    fun `discards query parameters in relative redirects`() = runBlocking {
         assertThat(followRedirects(Request(GET, "/redirect?foo=bar")), equalTo(Response(OK).body("ok")))
     }
 
     @Test
-    fun `discards charset from location header`() {
+    fun `discards charset from location header`() = runBlocking {
         assertThat(followRedirects(Request(GET, "/redirect-with-charset")), equalTo(Response(OK).body("destination")))
     }
 
     @Test
-    fun `prevents redirection loop after 10 redirects`() {
+    fun `prevents redirection loop after 10 redirects`() = runBlocking {
         try {
             followRedirects(Request(GET, "/loop"))
             fail("should have looped")
@@ -104,7 +106,7 @@ class ClientFiltersTest {
     }
 
     @Test
-    fun `adds request tracing to outgoing request when already present`() {
+    fun `adds request tracing to outgoing request when already present`() = runBlocking {
         val zipkinTraces = ZipkinTraces(TraceId("originalTraceId"), TraceId("originalSpanId"), TraceId("originalParentId"), SAMPLE)
         ZipkinTraces.THREAD_LOCAL.set(zipkinTraces)
 
@@ -127,7 +129,7 @@ class ClientFiltersTest {
     }
 
     @Test
-    fun `adds new request tracing to outgoing request when not present`() {
+    fun `adds new request tracing to outgoing request when not present`() = runBlocking {
         val svc = ClientFilters.RequestTracing().then { it ->
             val actual = ZipkinTraces(it)
             assertThat(actual, present())
@@ -139,31 +141,31 @@ class ClientFiltersTest {
     }
 
     @Test
-    fun `set host on client`() {
+    fun `set host on client`() = runBlocking {
         val handler = ClientFilters.SetHostFrom(Uri.of("http://localhost:123")).then { Response(OK).header("Host", it.header("Host")).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "/loop")), hasBody("http://localhost:123/loop").and(hasHeader("Host", "localhost:123")))
     }
 
     @Test
-    fun `set host without port on client`() {
+    fun `set host without port on client`() = runBlocking {
         val handler = ClientFilters.SetHostFrom(Uri.of("http://localhost")).then { Response(OK).header("Host", it.header("Host")).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "/loop")), hasBody("http://localhost/loop").and(hasHeader("Host", "localhost")))
     }
 
     @Test
-    fun `set host without port on client does not set path`() {
+    fun `set host without port on client does not set path`() = runBlocking {
         val handler = ClientFilters.SetHostFrom(Uri.of("http://localhost/a-path")).then { Response(OK).header("Host", it.header("Host")).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "/loop")), hasBody("http://localhost/loop").and(hasHeader("Host", "localhost")))
     }
 
     @Test
-    fun `set base uri appends path`() {
+    fun `set base uri appends path`() = runBlocking {
         val handler = ClientFilters.SetBaseUriFrom(Uri.of("http://localhost/a-path")).then { Response(OK).header("Host", it.header("Host")).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "/loop")), hasBody("http://localhost/a-path/loop").and(hasHeader("Host", "localhost")))
     }
 
     @Test
-    fun `set base uri appends path and copy other uri details`() {
+    fun `set base uri appends path and copy other uri details`() = runBlocking {
         val handler = ClientFilters.SetBaseUriFrom(Uri.of("http://localhost/a-path?a=b")).then { Response(OK).header("Host", it.header("Host")).body(it.toString()) }
 
         val response = handler(Request(GET, "/loop").query("foo", "bar"))
@@ -185,7 +187,7 @@ class ClientFiltersTest {
         }
 
         @Test
-        fun `gzip request and gunzip in-memory response`() {
+        fun `gzip request and gunzip in-memory response`() = runBlocking {
             val handler = ClientFilters.GZip().then {
                 assertThat(it, hasHeader("content-encoding", "gzip").and(hasBody(equalTo(Body("hello").gzipped().body))))
                 Response(OK).header("content-encoding", "gzip").body(it.body)
@@ -243,7 +245,7 @@ class ClientFiltersTest {
         }
 
         @Test
-        fun `passes through non-gzipped response`() {
+        fun `passes through non-gzipped response`() = runBlocking {
             val handler = ClientFilters.GZip().then {
                 Response(OK).body("hello")
             }
@@ -324,7 +326,7 @@ class ClientFiltersTest {
     }
 
     @Test
-    fun `clean proxy cleans request and response by reconstructing it on the way in and out`() {
+    fun `clean proxy cleans request and response by reconstructing it on the way in and out`() = runBlocking {
 
         val captured = AtomicReference<Request>()
 

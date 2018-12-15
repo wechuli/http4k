@@ -30,7 +30,7 @@ object ClientFilters {
     object RequestTracing {
         operator fun invoke(
             startReportFn: (Request, ZipkinTraces) -> Unit = { _, _ -> },
-            endReportFn: (Request, Response, ZipkinTraces) -> Unit = { _, _, _ -> }): Filter = Filter { next ->
+            endReportFn: (Request, Response, ZipkinTraces) -> Unit = { _, _, _ -> }) = Filter { next ->
             {
                 THREAD_LOCAL.get().run {
                     val updated = parentSpanId?.let {
@@ -50,7 +50,7 @@ object ClientFilters {
      * from the logic required to construct the rest of the request.
      */
     object SetHostFrom {
-        operator fun invoke(uri: Uri): Filter = Filter { next ->
+        operator fun invoke(uri: Uri) = Filter { next ->
             {
                 next(it.uri(it.uri.scheme(uri.scheme).host(uri.host).port(uri.port))
                     .replaceHeader("Host", "${uri.host}${uri.port?.let { port -> ":$port" } ?: ""}"))
@@ -69,7 +69,7 @@ object ClientFilters {
     }
 
     object BasicAuth {
-        operator fun invoke(provider: () -> Credentials): Filter = Filter { next ->
+        operator fun invoke(provider: () -> Credentials) = Filter { next ->
             { next(it.header("Authorization", "Basic ${provider().base64Encoded()}")) }
         }
 
@@ -80,7 +80,7 @@ object ClientFilters {
     }
 
     object BearerAuth {
-        operator fun invoke(provider: () -> String): Filter = Filter { next ->
+        operator fun invoke(provider: () -> String) = Filter { next ->
             { next(it.header("Authorization", "Bearer ${provider()}")) }
         }
 
@@ -88,9 +88,9 @@ object ClientFilters {
     }
 
     object FollowRedirects {
-        operator fun invoke(): Filter = Filter { next -> { makeRequest(next, it) } }
+        operator fun invoke() = Filter { next -> { makeRequest(next, it) } }
 
-        private fun makeRequest(next: HandleRequest, request: Request, attempt: Int = 1): Response =
+        private suspend fun makeRequest(next: HandleRequest, request: Request, attempt: Int = 1): Response =
             next(request).let {
                 if (it.isRedirection()) {
                     if (attempt == 10) throw IllegalStateException("Too many redirection")
@@ -118,7 +118,7 @@ object ClientFilters {
 
     object Cookies {
         operator fun invoke(clock: Clock = Clock.systemDefaultZone(),
-                            storage: CookieStorage = BasicCookieStorage()): Filter = Filter { next ->
+                            storage: CookieStorage = BasicCookieStorage()) = Filter { next ->
             { request ->
                 val now = clock.now()
                 removeExpired(now, storage)

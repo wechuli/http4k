@@ -1,4 +1,6 @@
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.ApacheClient
+import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -21,7 +23,7 @@ data class Result(val name: String, val time: Long, val totalRequests: Int, val 
 
 fun testWith(threads: Int, reps: Int, fn: (Int) -> ServerConfig, port: Int): Result {
     val config = fn(port)
-    val server = { _: Request -> Response(OK).body(System.nanoTime().toString()) }.asServer(config).start()
+    val server = HttpHandler { _: Request -> Response(OK).body(System.nanoTime().toString()) }.asServer(config).start()
     Thread.sleep(1000)
 
     val client = ApacheClient()
@@ -31,8 +33,10 @@ fun testWith(threads: Int, reps: Int, fn: (Int) -> ServerConfig, port: Int): Res
     (0..threads).forEach {
         thread {
             (0..reps).forEach {
-                if (client(Request(GET, "http://localhost:$port")).status != OK) {
-                    errors.incrementAndGet()
+                runBlocking {
+                    if (client(Request(GET, "http://localhost:$port")).status != OK) {
+                        errors.incrementAndGet()
+                    }
                 }
             }
             latch.countDown()

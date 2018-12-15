@@ -40,7 +40,7 @@ fun Stage.until(trigger: Trigger): Stage = object : Stage {
 /**
  * Converts this chaos stage to a standard http4k Filter.
  */
-fun Stage.asFilter(): Filter = Filter { next ->
+fun Stage.asFilter() = Filter { next ->
     {
         (this@asFilter(it) ?: Filter.NoOp).then(next)(it)
     }

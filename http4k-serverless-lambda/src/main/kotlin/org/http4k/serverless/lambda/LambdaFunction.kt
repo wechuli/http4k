@@ -3,6 +3,7 @@ package org.http4k.serverless.lambda
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
 import org.http4k.core.Filter
 import org.http4k.core.MemoryBody

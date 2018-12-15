@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.throws
 import org.http4k.contract.security.ApiKeySecurity
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.DELETE
 import org.http4k.core.Method.GET
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.Test
 
 class ContractRouteTest {
     @Test
-    fun `can build a request from a route`() {
+    fun `can build a request from a route`() = runBlocking {
         val path1 = Path.int().of("sue")
         val path2 = Path.string().of("bob")
         val pair = path1 / path2 meta {
@@ -42,7 +43,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `can build a request from a string`() {
+    fun `can build a request from a string`() = runBlocking {
         val path1 = Path.int().of("sue")
         val path2 = Path.string().of("bob")
         val pair = "/bob" bindContract GET
@@ -52,7 +53,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `can build a request from a routespec`() {
+    fun `can build a request from a routespec`() = runBlocking {
         val path1 = Path.int().of("sue")
         val path2 = Path.string().of("bob")
         val request = (path1 / path2 meta {
@@ -74,7 +75,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `0 parts - matches route`() {
+    fun `0 parts - matches route`() = runBlocking {
         val handler: (Request) -> Response = { Response(OK) }
         val route = "/" bindContract GET to handler
         val router = route.toRouter(Root)
@@ -84,7 +85,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `new requests`() {
+    fun `new requests`() = runBlocking {
         fun assertRequest(contractRoute: ContractRoute, expected: String) {
             assertThat(contractRoute.newRequest(Uri.of("http://foo.com")), equalTo(Request(GET, expected)))
         }
@@ -92,7 +93,7 @@ class ContractRouteTest {
         val handler = HttpHandler { Response(OK) }
 
         assertRequest("/" bindContract GET to handler, "http://foo.com")
-        assertRequest(Path.of("value") bindContract GET to { _ -> handler }, "http://foo.com/{value}")
+        assertRequest(Path.of("value") bindContract GET to { handler }, "http://foo.com/{value}")
         assertRequest(Path.of("value") / Path.of("value2") bindContract GET to { _, _ -> handler }, "http://foo.com/{value}/{value2}")
         assertRequest(Path.of("value") / Path.of("value2") / Path.of("value3") bindContract GET to { _, _, _ -> handler }, "http://foo.com/{value}/{value2}/{value3}")
         assertRequest(Path.of("value") / Path.of("value2") / Path.of("value3") / Path.of("value4") bindContract GET to { _, _, _, _ -> handler }, "http://foo.com/{value}/{value2}/{value3}/{value4}")
@@ -129,28 +130,28 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `1 part - matches route`() {
+    fun `1 part - matches route`() = runBlocking {
         fun matched(value: String) = HttpHandler { Response(OK).body(value) }
 
         checkMatching(Path.of("value") bindContract GET to ::matched, "/value", "value")
     }
 
     @Test
-    fun `2 parts - matches route`() {
+    fun `2 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String) = HttpHandler { Response(OK).body(value1 + value2) }
 
         checkMatching(Path.of("value") / "value2" meta {} bindContract GET to ::matched, "/value1/value2", "value1value2")
     }
 
     @Test
-    fun `3 parts - matches route`() {
+    fun `3 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String) = HttpHandler { Response(OK).body(value1 + value2 + value3) }
 
         checkMatching(Path.of("value") / Path.of("value2") / "value3" meta {} bindContract GET to ::matched, "/value1/value2/value3", "value1value2value3")
     }
 
     @Test
-    fun `4 parts - matches route`() {
+    fun `4 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String) = HttpHandler { Response(OK).body(value1 + value2 + value3 + value4) }
 
         checkMatching(Path.of("value") / Path.of("value2") / Path.of("value3") / "value4" meta {}
@@ -158,7 +159,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `5 parts - matches route`() {
+    fun `5 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String) =
             HttpHandler { Response(OK).body(value1 + value2 + value3 + value4 + value5) }
 
@@ -167,7 +168,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `6 parts - matches route`() {
+    fun `6 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String) =
             HttpHandler { Response(OK).body(value1 + value2 + value3 + value4 + value5 + value6) }
 
@@ -178,9 +179,9 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `7 parts - matches route`() {
+    fun `7 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String) =HttpHandler  {
+                    value7: String) =HttpHandler {
             Response(OK).body(value1 + value2 + value3 + value4 +
                 value5 + value6 + value7)
         }
@@ -192,9 +193,9 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `8 parts - matches route`() {
+    fun `8 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String) =HttpHandler  {
+                    value7: String, value8: String) =HttpHandler {
             Response(OK).body(value1 + value2 +
                 value3 + value4 + value5 + value6 + value7 + value8)
         }
@@ -206,9 +207,9 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `9 parts - matches route`() {
+    fun `9 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String, value9: String) =HttpHandler  {
+                    value7: String, value8: String, value9: String) =HttpHandler {
             Response(OK).body(value1 +
                 value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9)
         }
@@ -221,9 +222,9 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `10 parts - matches route`() {
+    fun `10 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String, value9: String, value10: String) =HttpHandler  {
+                    value7: String, value8: String, value9: String, value10: String) =HttpHandler {
             Response(OK)
                 .body(value1 + value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9 + value10)
         }
@@ -236,7 +237,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `11 parts - unsupported`() {
+    fun `11 parts - unsupported`() = runBlocking {
         assertThat({
             Path.of("value") / Path.of("value2") / Path.of("value3") / Path.of("value4") /
                 Path.of("value5") / Path.of("value6") / Path.of("value7") / Path.of("value8") /
@@ -244,10 +245,9 @@ class ContractRouteTest {
         }, throws<UnsupportedOperationException>())
     }
 
-    private fun checkMatching(route: ContractRoute, valid: String, expected: String) {
+    private suspend fun checkMatching(route: ContractRoute, valid: String, expected: String) {
         assertThat(route(Request(GET, valid)).bodyString(), equalTo(expected))
         assertThat(route(Request(DELETE, valid)), hasStatus(NOT_FOUND))
-
         val routerOnNoPrefix = route.toRouter(Root)
         assertThat(routerOnNoPrefix.match(Request(GET, "")), equalTo(Unmatched as RouterMatch))
         assertThat(routerOnNoPrefix.match(Request(POST, valid)), equalTo(Unmatched as RouterMatch))

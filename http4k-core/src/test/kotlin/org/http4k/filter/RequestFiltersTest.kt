@@ -3,6 +3,7 @@ package org.http4k.filter
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.Test
 
 class RequestFiltersTest {
     @Test
-    fun `proxy host - http`() {
+    fun `proxy host - http`() = runBlocking {
         val handler = RequestFilters.ProxyHost(Http).then { Response(OK).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "http://localhost:9000/loop").header("host", "bob.com:443")), hasBody("http://bob.com:443/loop"))
         assertThat(handler(Request(GET, "http://localhost/loop").header("host", "bob.com")), hasBody("http://bob.com/loop"))
@@ -29,7 +30,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `proxy host - https`() {
+    fun `proxy host - https`() = runBlocking {
         val handler = RequestFilters.ProxyHost(Https).then { Response(OK).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "http://localhost:9000/loop").header("host", "bob.com:443")), hasBody("https://bob.com:443/loop"))
         assertThat(handler(Request(GET, "http://localhost/loop").header("host", "bob.com")), hasBody("https://bob.com/loop"))
@@ -37,7 +38,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `proxy host - port`() {
+    fun `proxy host - port`() = runBlocking {
         val handler = RequestFilters.ProxyHost(Port).then { Response(OK).body(it.uri.toString()) }
         assertThat(handler(Request(GET, "http://localhost:443/loop").header("host", "bob.com")), hasBody("https://bob.com/loop"))
         assertThat(handler(Request(GET, "http://localhost:81/loop").header("host", "bob.com:81")), hasBody("http://bob.com:81/loop"))
@@ -47,7 +48,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `tap passes request through to function`() {
+    fun `tap passes request through to function`() = runBlocking {
         val get = Request(GET, "")
         var called = false
         RequestFilters.Tap { called = true; assertThat(it, equalTo(get)) }.then(Response(OK).toHttpHandler())(get)
@@ -73,8 +74,8 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `gunzip request which has gzip content encoding`() {
-        fun assertSupportsUnzipping(body: String) {
+    fun `gunzip request which has gzip content encoding`() = runBlocking {
+        suspend fun assertSupportsUnzipping(body: String) {
             val handler = RequestFilters.GunZip().then {
                 assertThat(it, hasBody(body))
                 Response(OK)
@@ -86,7 +87,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `passthrough gunzip request with no transfer encoding`() {
+    fun `passthrough gunzip request with no transfer encoding`() = runBlocking {
         val body = "foobar"
         val handler = ResponseFilters.GunZip().then {
             assertThat(it, hasBody(body))

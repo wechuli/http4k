@@ -12,14 +12,17 @@ import java.io.InputStream
  */
 interface Websocket {
     val upgradeRequest: Request
-    fun send(message: WsMessage)
-    fun close(status: WsStatus = NORMAL)
-    fun onError(fn: (Throwable) -> Unit)
-    fun onClose(fn: (WsStatus) -> Unit)
-    fun onMessage(fn: (WsMessage) -> Unit)
+    suspend fun send(message: WsMessage)
+    suspend fun close(status: WsStatus = NORMAL)
+    suspend fun onError(fn: suspend (Throwable) -> Unit)
+    suspend fun onClose(fn: suspend (WsStatus) -> Unit)
+    suspend fun onMessage(fn: suspend (WsMessage) -> Unit)
 }
 
-typealias WsConsumer = (Websocket) -> Unit
+typealias HandleWs = suspend (Websocket) -> Unit
+
+interface WsConsumer {
+    suspend operator fun invoke(ws: Websocket)
 
 interface WsHandler {
     operator fun invoke(request: Request): WsConsumer?
@@ -27,6 +30,22 @@ interface WsHandler {
     companion object {
         operator fun invoke(fn: (Request) -> WsConsumer?) = object : WsHandler {
             override operator fun invoke(request: Request) = fn(request)
+        }
+    }
+}
+    companion object {
+        operator fun invoke(fn: HandleWs) = object : WsConsumer {
+            override suspend operator fun invoke(ws: Websocket) = fn(ws)
+        }
+    }
+}
+
+interface WsHandler {
+    suspend operator fun invoke(request: Request): WsConsumer?
+
+    companion object {
+        operator fun invoke(fn: suspend (Request) -> WsConsumer?) = object : WsHandler {
+            override suspend operator fun invoke(request: Request) = fn(request)
         }
     }
 }

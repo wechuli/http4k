@@ -54,7 +54,7 @@ data class ContractRoutingHttpHandler(private val renderer: ContractRenderer,
         }
     }
 
-    override fun invoke(request: Request): Response = handler(request)
+    override suspend fun invoke(request: Request): Response = handler(request)
 
     private val descriptionRoute = ContractRouteSpec0({ PathSegments("$it$descriptionPath") }, RouteMeta(operationId = "description"))
         .let {
@@ -75,7 +75,7 @@ data class ContractRoutingHttpHandler(private val renderer: ContractRenderer,
 
     override fun toString() = contractRoot.toString() + "\n" + routes.joinToString("\n") { it.toString() }
 
-    override fun match(request: Request): RouterMatch {
+    override suspend fun match(request: Request): RouterMatch {
         val unmatched: RouterMatch = Unmatched
 
         return if (request.isIn(contractRoot)) {

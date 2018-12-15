@@ -11,6 +11,7 @@ import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Uri
 import org.http4k.core.UriTemplate
+import org.http4k.websocket.HandleWs
 import org.http4k.websocket.WsConsumer
 import org.http4k.websocket.WsHandler
 import java.io.InputStream
@@ -22,7 +23,7 @@ interface Router {
     /**
      * Attempt to supply an HttpHandler which can service the passed request.
      */
-    fun match(request: Request): RouterMatch
+    suspend fun match(request: Request): RouterMatch
 }
 
 sealed class RouterMatch(private val priority: Int) : Comparable<RouterMatch> {
@@ -82,7 +83,7 @@ interface RoutingWsHandler : WsHandler {
 fun websockets(ws: WsConsumer): WsHandler = WsHandler { ws }
 
 fun websockets(vararg list: RoutingWsHandler): RoutingWsHandler = object : RoutingWsHandler {
-    override operator fun invoke(request: Request): WsConsumer? = list.firstOrNull { it(request) != null }?.invoke(request)
+    override suspend operator fun invoke(request: Request): WsConsumer? = list.firstOrNull { it(request) != null }?.invoke(request)
     override fun withBasePath(new: String): RoutingWsHandler = websockets(*list.map { it.withBasePath(new) }.toTypedArray())
 }
 
@@ -92,12 +93,12 @@ fun Request.path(name: String): String? = when (this) {
 }
 
 data class PathMethod(val path: String, val method: Method) {
-    infix fun to(fn: HandleRequest) = to(HttpHandler(fn))
+    infix fun to(fn: suspend (Request) -> Response) = to(HttpHandler(fn))
     infix fun to(action: HttpHandler): RoutingHttpHandler =
         when (action) {
             is StaticRoutingHttpHandler -> action.withBasePath(path).let {
                 object : RoutingHttpHandler by it {
-                    override fun match(request: Request) = when (method) {
+                    override suspend fun match(request: Request) = when (method) {
                         request.method -> it.match(request)
                         else -> RouterMatch.MethodNotMatched
                     }
@@ -111,9 +112,11 @@ infix fun String.bind(method: Method): PathMethod = PathMethod(this, method)
 
 infix fun String.bind(httpHandler: RoutingHttpHandler): RoutingHttpHandler = httpHandler.withBasePath(this)
 
+infix fun String.bind(fn: HandleRequest): RoutingHttpHandler = bind(HttpHandler(fn))
+
 infix fun String.bind(action: HttpHandler): RoutingHttpHandler = TemplateRoutingHttpHandler(null, UriTemplate.from(this), action)
 
-infix fun String.bind(fn: HandleRequest): RoutingHttpHandler = bind(HttpHandler(fn))
+infix fun String.bind(fn: HandleWs): RoutingWsHandler = bind(WsConsumer(fn))
 
 infix fun String.bind(consumer: WsConsumer): RoutingWsHandler = TemplateRoutingWsHandler(UriTemplate.from(this), consumer)
 

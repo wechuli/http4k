@@ -7,7 +7,7 @@ import org.http4k.format.Moshi.auto
 
 data class MyIntWrapper(val value: Int)
 
-fun main() {
+suspend fun main() {
     val aListLens = Body.auto<List<MyIntWrapper>>().toLens()
 
     val req = Request(GET, "/").body(""" [ {"value":1}, {"value":2} ] """)

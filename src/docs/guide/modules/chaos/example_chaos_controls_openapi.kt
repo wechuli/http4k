@@ -10,7 +10,7 @@ import org.http4k.filter.ServerFilters.Cors
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
-fun main() {
+suspend fun main() {
     Cors(UnsafeGlobalPermissive)
         .then(ServerFilters.CatchAll())
         .then { Response(OK).body("A normal response") }

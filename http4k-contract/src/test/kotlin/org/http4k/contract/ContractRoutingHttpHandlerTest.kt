@@ -3,6 +3,7 @@ package org.http4k.contract
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.contract.PreFlightExtraction.Companion.IgnoreBody
 import org.http4k.contract.PreFlightExtraction.Companion.None
 import org.http4k.contract.security.ApiKeySecurity
@@ -67,7 +68,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     override val expectedNotFoundBody = "{\"message\":\"No route found on this path. Have you used the correct HTTP verb?\"}"
 
     @Test
-    fun `by default the description lives at the route`() {
+    fun `by default the description lives at the route`() = runBlocking {
         Request(GET, "/root")
         val response = ("/root" bind contract {
             renderer = SimpleJson(Jackson)
@@ -78,7 +79,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `passes through contract filter`() {
+    fun `passes through contract filter`() = runBlocking {
         val filter = Filter { next ->
             { next(it.with(header of "true")) }
         }
@@ -96,7 +97,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `traffic goes to the path specified`() {
+    fun `traffic goes to the path specified`() = runBlocking {
         val root = routes(
             "/root/bar" bind contract {
                 routes += "/foo/bar" / Path.of("world") bindContract GET to { _ -> HttpHandler { Response(OK) } }
@@ -108,7 +109,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `OPTIONS traffic goes to the path specified but is intercepted by the default response if the route does NOT response to OPTIONS`() {
+    fun `OPTIONS traffic goes to the path specified but is intercepted by the default response if the route does NOT response to OPTIONS`() = runBlocking {
         val root = routes(
             "/root/bar" bind contract {
                 routes += "/foo/bar" bindContract GET to { Response(NOT_IMPLEMENTED) }
@@ -120,7 +121,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
 //    @Test
-//    fun `OPTIONS traffic goes to the path and handler specified if the route responds to OPTIONS`() {
+//    fun `OPTIONS traffic goes to the path and handler specified if the route responds to OPTIONS`() = runBlocking {
 //        val root = org.http4k.routing.routes(
 //            "/root/bar" bind contract {
 //               routes += "/foo/bar" bindContract OPTIONS to { Response(NOT_IMPLEMENTED) })
@@ -131,7 +132,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
 //    }
 
     @Test
-    fun `identifies called route using identity header on request`() {
+    fun `identifies called route using identity header on request`() = runBlocking {
         val root = routes(
             "/root" bind contract {
                 routes += Path.fixed("hello") / Path.of("world") bindContract GET to { _, _ -> HttpHandler { Response(OK) } }
@@ -144,7 +145,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `applies security and responds with a 401 to unauthorized requests`() {
+    fun `applies security and responds with a 401 to unauthorized requests`() = runBlocking {
         val root = "/root" bind contract {
             security = ApiKeySecurity(Query.required("key"), { it == "bob" })
             routes += "/bob" bindContract GET to { Response(OK) }
@@ -154,7 +155,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `security from endpoint overrides global security`() {
+    fun `security from endpoint overrides global security`() = runBlocking {
         val credentials = Credentials("bill", "password")
         val root = "/root" bind contract {
             security = ApiKeySecurity(Query.required("key"), { it == "valid" })
@@ -180,7 +181,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `pre-security filter is applied before security`() {
+    fun `pre-security filter is applied before security`() = runBlocking {
         val root = "/root" bind contract {
             security = ApiKeySecurity(Query.required("key"), { it == "bob" })
             routes += "/bob" bindContract GET to { Response(OK) }
@@ -194,7 +195,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `post-security filter is applied after security`() {
+    fun `post-security filter is applied after security`() = runBlocking {
         val root = "/root" bind contract {
             security = ApiKeySecurity(Query.required("key"), { it == "bob" })
             routes += "/bob" bindContract GET to { Response(OK).body(it.body) }
@@ -208,7 +209,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `applies security and responds with a 200 to authorized requests`() {
+    fun `applies security and responds with a 200 to authorized requests`() = runBlocking {
         val root = "/root" bind contract {
             security = ApiKeySecurity(Query.required("key"), { it == "bob" })
             routes += "/bob" bindContract GET to { Response(OK) }
@@ -219,7 +220,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `can change path to description route`() {
+    fun `can change path to description route`() = runBlocking {
         val response = ("/root/foo" bind contract {
             descriptionPath = "/docs/swagger.json"
         }).invoke(Request(GET, "/root/foo/docs/swagger.json"))
@@ -227,7 +228,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `only calls filters once`() {
+    fun `only calls filters once`() = runBlocking {
         val filter = Filter { next ->
             {
                 next(it.header("foo", "bar"))
@@ -235,7 +236,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
         }
         val contract = contract {
             routes += "/test" bindContract GET to
-                { Response(OK).body(it.headerValues("foo").toString()) }
+                HttpHandler { Response(OK).body(it.headerValues("foo").toString()) }
         }
 
         val response = (filter.then(contract))(Request(GET, "/test"))
@@ -244,35 +245,35 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `handles bad request from handler - parameter`() {
+    fun `handles bad request from handler - parameter`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request")),
             hasStatus(BAD_REQUEST) and
                 hasBody("""{"message":"Missing/invalid parameters","params":[{"name":"foo","type":"query","datatype":"integer","required":true,"reason":"Missing"}]}"""))
     }
 
     @Test
-    fun `handles bad request from handler - body`() {
+    fun `handles bad request from handler - body`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request-body")),
             hasStatus(BAD_REQUEST) and
                 hasBody("""{"message":"Missing/invalid parameters","params":[{"name":"body","type":"body","datatype":"object","required":true,"reason":"Invalid"}]}"""))
     }
 
     @Test
-    fun `handles bad request via contract violation - parameter`() {
+    fun `handles bad request via contract violation - parameter`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request-query-via-meta")),
             hasStatus(BAD_REQUEST) and
                 hasBody("""{"message":"Missing/invalid parameters","params":[{"name":"foo","type":"query","datatype":"integer","required":true,"reason":"Missing"}]}"""))
     }
 
     @Test
-    fun `handles bad request via contract-violation - body`() {
+    fun `handles bad request via contract-violation - body`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request-body-via-meta")),
             hasStatus(BAD_REQUEST) and
                 hasBody("""{"message":"Missing/invalid parameters","params":[{"name":"body","type":"body","datatype":"object","required":true,"reason":"Invalid"}]}"""))
     }
 
     @Test
-    fun `can disable body checking by overriding pre-request-extraction`() {
+    fun `can disable body checking by overriding pre-request-extraction`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request-body-ignore-body")), hasStatus(OK))
     }
 

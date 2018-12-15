@@ -3,6 +3,7 @@ package org.http4k.routing
 import com.natpryce.hamkrest.absent
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
+import kotlinx.coroutines.runBlocking
 import com.natpryce.hamkrest.present
 import org.http4k.core.Filter
 import org.http4k.core.Method.GET
@@ -26,7 +27,7 @@ abstract class RoutingHttpHandlerContract {
     open val expectedNotFoundBody = ""
 
     @Test
-    fun `matches a particular route`() {
+    fun `matches a particular route`() = runBlocking {
         val criteria = hasStatus(OK)
 
         assertThat(handler.matchAndInvoke(Request(GET, validPath)), present(criteria))
@@ -34,13 +35,13 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    open fun `does not match a particular route`() {
+    open fun `does not match a particular route`() = runBlocking {
         assertThat(handler.matchAndInvoke(Request(GET, "/not-found")), absent())
         assertThat(handler(Request(GET, "/not-found")), hasStatus(NOT_FOUND) and hasBody(expectedNotFoundBody))
     }
 
     @Test
-    fun `with filter - applies to matching handler`() {
+    fun `with filter - applies to matching handler`() = runBlocking {
         val filtered = handler.withFilter(filterAppending("bar"))
         val criteria = hasStatus(OK) and hasHeader("res-header", "bar")
         val request = Request(GET, validPath)
@@ -50,7 +51,7 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    open fun `with filter - applies when not found`() {
+    open fun `with filter - applies when not found`() = runBlocking {
         val filtered = handler.withFilter(filterAppending("foo"))
         val request = Request(GET, "/not-found")
 
@@ -59,7 +60,7 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    open fun `with filter - applies in correct order`() {
+    open fun `with filter - applies in correct order`() = runBlocking {
         val filtered = handler.withFilter(filterAppending("foo")).withFilter(filterAppending("bar"))
         val request = Request(GET, "/not-found")
 
@@ -68,7 +69,7 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    fun `with base path - matches`() {
+    fun `with base path - matches`() = runBlocking {
         val withBase = handler.withBasePath(prefix)
         val request = Request(GET, "$prefix$validPath")
         val criteria = hasStatus(OK)
@@ -78,7 +79,7 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    open fun `with base path - no longer matches original`() {
+    open fun `with base path - no longer matches original`() = runBlocking {
         val withBase = handler.withBasePath(prefix)
         val request = Request(GET, validPath)
 
@@ -87,7 +88,7 @@ abstract class RoutingHttpHandlerContract {
     }
 
     @Test
-    fun `with base path - multiple levels`() {
+    fun `with base path - multiple levels`() = runBlocking {
         val withBase = handler.withBasePath(prefix).withBasePath(prePrefix)
         val request = Request(GET, "$prePrefix$prefix$validPath")
         val criteria = hasStatus(OK)

@@ -15,7 +15,7 @@ import java.io.File
 
 data class Person(val name: String, val age: Int) : ViewModel
 
-fun main() {
+suspend fun main() {
 
     // first, create a Renderer - this can be a Caching instance or a HotReload for development
     val renderer = HandlebarsTemplates().HotReload("src/test/resources")

@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.Matcher
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
 import org.http4k.core.ContentType.Companion.APPLICATION_JSON
 import org.http4k.core.Method.GET
@@ -59,7 +60,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     private val rpc = "/rpc" bind builder(counter)
 
     @Test
-    fun `rpc call with named parameters returns result`() {
+    fun `rpc call with named parameters returns result`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": 2}""", "1"),
             hasSuccessResponse("2", "1")
@@ -67,7 +68,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with positional parameters returns result`() {
+    fun `rpc call with positional parameters returns result`() = runBlocking {
         assertThat(
             rpcRequest("increment", "[3]", "1"),
             hasSuccessResponse("3", "1")
@@ -75,7 +76,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call as notification with named parameters returns no content`() {
+    fun `rpc call as notification with named parameters returns no content`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": 5}"""),
             hasNoContentResponse()
@@ -84,7 +85,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call as notification with positional parameters returns no content`() {
+    fun `rpc call as notification with positional parameters returns no content`() = runBlocking {
         assertThat(
             rpcRequest("increment", "[4]"),
             hasNoContentResponse()
@@ -93,7 +94,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with no parameters returns result`() {
+    fun `rpc call with no parameters returns result`() = runBlocking {
         rpcRequest("increment", """{"value": 2}""")
         assertThat(
             rpcRequest("current", id = "1"),
@@ -102,7 +103,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid parameters returns error`() {
+    fun `rpc call with invalid parameters returns error`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": "a"}""", "1"),
             hasErrorResponse(-32602, "Invalid params", "1")
@@ -110,7 +111,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call of non-existent method returns error`() {
+    fun `rpc call of non-existent method returns error`() = runBlocking {
         assertThat(
             rpcRequest("other", id = "1"),
             hasErrorResponse(-32601, "Method not found", "1")
@@ -118,7 +119,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid json returns error`() {
+    fun `rpc call with invalid json returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"jsonrpc": "2.0", "method": "foobar, "params": "bar", "baz]"""),
             hasErrorResponse(-32700, "Parse error", null)
@@ -126,7 +127,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid request returns error`() {
+    fun `rpc call with invalid request returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"value": 5}"""),
             hasErrorResponse(-32600, "Invalid Request", null)
@@ -134,7 +135,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid version type returns error`() {
+    fun `rpc call with invalid version type returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"jsonrpc": 2.0, "method": "a", "id" : 1}"""),
             hasErrorResponse(-32600, "Invalid Request", "1")
@@ -142,7 +143,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid version value returns error`() {
+    fun `rpc call with invalid version value returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"jsonrpc": "2.1", "method": "increment", "params": [4], "id" : 1}"""),
             hasErrorResponse(-32600, "Invalid Request", "1")
@@ -150,7 +151,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid method type returns error`() {
+    fun `rpc call with invalid method type returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"jsonrpc": "2.0", "method": 2, "id" : 1}"""),
             hasErrorResponse(-32600, "Invalid Request", "1")
@@ -158,7 +159,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid params type returns error`() {
+    fun `rpc call with invalid params type returns error`() = runBlocking {
         assertThat(
             rpcRequest("increment", "3", "1"),
             hasErrorResponse(-32600, "Invalid Request", "1")
@@ -166,7 +167,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with invalid id type returns error`() {
+    fun `rpc call with invalid id type returns error`() = runBlocking {
         assertThat(
             rpcRequest("increment", "3", "[1]"),
             hasErrorResponse(-32600, "Invalid Request", null)
@@ -174,7 +175,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with id type as string returns result`() {
+    fun `rpc call with id type as string returns result`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": 5}""", """"1""""),
             hasSuccessResponse("5", """"1"""")
@@ -182,7 +183,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call with id type as null returns result`() {
+    fun `rpc call with id type as null returns result`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": 3}""", "null"),
             hasSuccessResponse("3", "null")
@@ -190,7 +191,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call as notification with invalid version value returns error`() {
+    fun `rpc call as notification with invalid version value returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""{"jsonrpc": "2.1", "method": "a"}"""),
             hasErrorResponse(-32600, "Invalid Request", null)
@@ -198,7 +199,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call to method that throws unhandled exception returns error`() {
+    fun `rpc call to method that throws unhandled exception returns error`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": 10}""", "1"),
             hasErrorResponse(-32603, "Internal error", "1")
@@ -206,7 +207,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call using GET http method returns method not allowed`() {
+    fun `rpc call using GET http method returns method not allowed`() = runBlocking {
         assertThat(
             rpc(Request(GET, "/rpc")),
             hasStatus(METHOD_NOT_ALLOWED) and hasBody("")
@@ -214,7 +215,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call using wrong content type returns unsupported media type`() {
+    fun `rpc call using wrong content type returns unsupported media type`() = runBlocking {
         assertThat(
             rpc(Request(POST, "/rpc")),
             hasStatus(UNSUPPORTED_MEDIA_TYPE) and hasBody("")
@@ -222,7 +223,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc batch call with invalid json returns error`() {
+    fun `rpc batch call with invalid json returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("""[{"jsonrpc": "2.0", "method": "a", "id": 1}, {"jsonrpc": "2.0", "method":"""),
             hasErrorResponse(-32700, "Parse error", null)
@@ -230,7 +231,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc batch call with empty array returns error`() {
+    fun `rpc batch call with empty array returns error`() = runBlocking {
         assertThat(
             rpcRequestWithBody("[]"),
             hasErrorResponse(-32600, "Invalid Request", null)
@@ -238,7 +239,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc batch call with invalid requests returns result`() {
+    fun `rpc batch call with invalid requests returns result`() = runBlocking {
         assertThat(
             rpcRequestWithBody("[1,2,3]"),
             hasBatchResponse(
@@ -250,7 +251,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc batch call with mixed invalid and valid normal and notifications returns result`() {
+    fun `rpc batch call with mixed invalid and valid normal and notifications returns result`() = runBlocking {
         assertThat(
             rpcRequestWithBody(listOf(
                 rpcJson("increment", """{"value": 5}""", "1"),
@@ -270,7 +271,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc batch call with only notifications returns no content`() {
+    fun `rpc batch call with only notifications returns no content`() = runBlocking {
         assertThat(
             rpcRequestWithBody(listOf(
                 rpcJson("increment", """{"value": 5}"""),
@@ -281,7 +282,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
     }
 
     @Test
-    fun `rpc call that throws user exception returns failure`() {
+    fun `rpc call that throws user exception returns failure`() = runBlocking {
         assertThat(
             rpcRequest("increment", """{"value": -1}""", "1"),
             hasErrorResponse(1, "Increment by negative",
@@ -289,7 +290,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
         )
     }
 
-    protected fun rpcRequest(method: String, params: String? = null, id: String? = null): Response =
+    protected suspend fun rpcRequest(method: String, params: String? = null, id: String? = null): Response =
         rpcRequestWithBody(rpcJson(method, params, id))
 
     private fun rpcJson(method: String, params: String? = null, id: String? = null): String =
@@ -298,7 +299,7 @@ abstract class JsonRpcServiceContract<NODE : Any>(builder: (Counter) -> JsonRpcS
             id?.let { """, "id": $id""" }.orEmpty() +
             "}"
 
-    private fun rpcRequestWithBody(body: String): Response =
+    private suspend fun rpcRequestWithBody(body: String): Response =
         rpc(Request(POST, "/rpc")
             .with(Body.string(APPLICATION_JSON).toLens() of body))
 
@@ -354,7 +355,7 @@ abstract class ManualMappingJsonRpcServiceContract<NODE : Any>(json: Json<NODE>)
     }
 }) {
     @Test
-    fun `rpc call with positional parameters when fields not defined returns error`() {
+    fun `rpc call with positional parameters when fields not defined returns error`() = runBlocking {
         assertThat(
             rpcRequest("incrementNoArray", "[3]", "1"),
             hasErrorResponse(-32602, "Invalid params", "1")
@@ -370,7 +371,7 @@ abstract class AutoMappingJsonRpcServiceContract<NODE : Any>(json: JsonLibAutoMa
     }
 }) {
     @Test
-    fun `rpc call with positional parameters when fields defined returns result`() {
+    fun `rpc call with positional parameters when fields defined returns result`() = runBlocking {
         assertThat(
             rpcRequest("incrementDefinedFields", "[3]", "1"),
             hasSuccessResponse("3", "1")

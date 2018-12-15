@@ -3,6 +3,9 @@ package org.http4k.chaos
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
+import org.http4k.chaos.ChaosStages.Wait
+import org.http4k.chaos.ChaosTriggers.Always
 import org.http4k.chaos.ChaosBehaviours.ReturnStatus
 import org.http4k.contract.security.ApiKeySecurity
 import org.http4k.contract.security.NoSecurity
@@ -39,7 +42,7 @@ class ChaosEngineTest {
     private val customChaos = """{"chaos":"Always ReturnStatus (418)"}"""
 
     @Test
-    fun `can convert a normal app to be chaotic`() {
+    fun `can convert a normal app to be chaotic`() = runBlocking {
         val app = routes("/" bind GET to { Response(OK) })
 
         val engine = ChaosEngine(ReturnStatus(NOT_FOUND))
@@ -65,7 +68,7 @@ class ChaosEngineTest {
     fun `can convert a normal app to support the set of remote Chaos endpoints`() {
         val app = routes("/" bind GET to { Response(OK) })
 
-        val engine = ChaosEngine(ReturnStatus(NOT_FOUND))
+        val engine = ChaosEngine(ChaosBehaviours.ReturnStatus(NOT_FOUND))
 
         val appWithChaos = app.withChaosApi(engine)
 
@@ -97,7 +100,7 @@ class ChaosEngineTest {
     }
 
     @Test
-    fun `can configure chaos controls`() {
+    fun `can configure chaos controls`() = runBlocking {
         val app = routes("/" bind GET to { Response(OK) })
 
         val appWithChaos = app.withChaosApi(
@@ -110,7 +113,7 @@ class ChaosEngineTest {
     }
 
     @Test
-    fun `combines with other route blocks`() {
+    fun `combines with other route blocks`() = runBlocking {
         val app = routes("/{bib}/{bar}" bind GET to { Response(I_M_A_TEAPOT).body(it.path("bib")!! + it.path("bar")!!) })
 
         val appWithChaos = app.withChaosApi(controlsPath = "/context")
@@ -123,7 +126,7 @@ class ChaosEngineTest {
     }
 
     @Test
-    fun `combines with a standard handler route blocks`() {
+    fun `combines with a standard handler route blocks`() = runBlocking {
         val app = HttpHandler { Response(I_M_A_TEAPOT) }
 
         val appWithChaos = app.withChaosApi(controlsPath = "/context")

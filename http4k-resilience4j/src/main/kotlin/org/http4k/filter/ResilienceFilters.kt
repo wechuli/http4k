@@ -8,6 +8,7 @@ import io.github.resilience4j.ratelimiter.RateLimiter
 import io.github.resilience4j.ratelimiter.RequestNotPermitted
 import io.github.resilience4j.retry.Retry
 import io.github.resilience4j.retry.Retry.ofDefaults
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Filter
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.SERVICE_UNAVAILABLE
@@ -29,8 +30,10 @@ object ResilienceFilters {
             {
                 try {
                     circuitBreaker.executeCallable {
-                        next(it).apply {
-                            if (isError(this)) circuitBreaker.onError(0, MILLISECONDS, CircuitError)
+                        runBlocking {
+                            next(it).apply {
+                                if (isError(this)) circuitBreaker.onError(0, MILLISECONDS, CircuitError)
+                            }
                         }
                     }
                 } catch (e: CallNotPermittedException) {
@@ -53,8 +56,10 @@ object ResilienceFilters {
             {
                 try {
                     retry.executeCallable {
-                        next(it).apply {
-                            if (isError(this)) throw RetryError(this)
+                        runBlocking {
+                            next(it).apply {
+                                if (isError(this)) throw RetryError(this)
+                            }
                         }
                     }
                 } catch (e: RetryError) {
@@ -73,7 +78,7 @@ object ResilienceFilters {
                             onError: () -> Response = { Response(TOO_MANY_REQUESTS.description("Rate limit exceeded")) }) = Filter { next ->
             {
                 try {
-                    rateLimit.executeCallable { next(it) }
+                    rateLimit.executeCallable { runBlocking { next(it) } }
                 } catch (e: RequestNotPermitted) {
                     onError()
                 }
@@ -90,7 +95,7 @@ object ResilienceFilters {
                             onError: () -> Response = { Response(TOO_MANY_REQUESTS.description("Bulkhead limit exceeded")) }) = Filter { next ->
             {
                 try {
-                    bulkhead.executeCallable { next(it) }
+                    bulkhead.executeCallable { runBlocking { next(it) } }
                 } catch (e: BulkheadFullException) {
                     onError()
                 }

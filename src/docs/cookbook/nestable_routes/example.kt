@@ -15,7 +15,7 @@ import org.http4k.routing.routes
 import org.http4k.routing.singlePageApp
 import org.http4k.routing.static
 
-fun main() {
+suspend fun main() {
     val routesWithFilter =
         PrintRequestAndResponse().then(
             routes(

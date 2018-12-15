@@ -6,6 +6,8 @@ import com.natpryce.Success
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
+import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -28,7 +30,7 @@ internal class ClientValidationFilterTest {
     private val validRedirectUri = Uri.of("https://a-redirect-uri")
     private val validScopes = listOf("openid", "profile")
 
-    private val loginPage = { _: Request -> Response(OK).body("login page") }
+    private val loginPage = HttpHandler { _: Request -> Response(OK).body("login page") }
     private val isLoginPage = hasStatus(OK) and hasBody("login page")
     private val json = Jackson
 
@@ -67,7 +69,7 @@ internal class ClientValidationFilterTest {
 
 
     @Test
-    fun `allow accessing the login page`() {
+    fun `allow accessing the login page`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", Code.queryParameterValue)
             .query("client_id", validClientId.value)
@@ -78,7 +80,7 @@ internal class ClientValidationFilterTest {
     }
 
     @Test
-    fun `validates presence of client_id`() {
+    fun `validates presence of client_id`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", Code.queryParameterValue)
             .query("redirect_uri", validRedirectUri.toString())
@@ -89,7 +91,7 @@ internal class ClientValidationFilterTest {
     }
 
     @Test
-    fun `validates presence of redirect_uri`() {
+    fun `validates presence of redirect_uri`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", Code.queryParameterValue)
             .query("client_id", validClientId.value)
@@ -100,7 +102,7 @@ internal class ClientValidationFilterTest {
     }
 
     @Test
-    fun `validates client_id value`() {
+    fun `validates client_id value`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", Code.queryParameterValue)
             .query("client_id", "invalid-client")
@@ -112,7 +114,7 @@ internal class ClientValidationFilterTest {
     }
 
     @Test
-    fun `validates presence of resonse_type`() {
+    fun `validates presence of resonse_type`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", "something invalid")
             .query("client_id", validClientId.value)
@@ -123,7 +125,7 @@ internal class ClientValidationFilterTest {
     }
 
     @Test
-    fun `validates presence of resonse_type, even taking into account response mode, and with state`() {
+    fun `validates presence of resonse_type, even taking into account response mode, and with state`() = runBlocking {
         val response = filter(Request(GET, "/auth")
             .query("response_type", "something invalid")
             .query("response_mode", "fragment")

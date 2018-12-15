@@ -8,6 +8,8 @@ import com.natpryce.hamkrest.has
 import com.natpryce.hamkrest.throws
 import org.http4k.cloudnative.RemoteRequestFailed
 import org.http4k.core.Filter
+import kotlinx.coroutines.runBlocking
+import org.http4k.cloudnative.UpstreamRequestFailed
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -35,7 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class HandleRemoteRequestFailedTest {
 
     @Test
-    fun `when server and client filters are used together, converts errors as expected`() {
+    fun `when server and client filters are used together, converts errors as expected`() = runBlocking {
         assertServerResponseForClientStatus(OK, hasStatus(OK))
         assertServerResponseForClientStatus(CLIENT_TIMEOUT, hasStatus(GATEWAY_TIMEOUT))
         assertServerResponseForClientStatus(GATEWAY_TIMEOUT, hasStatus(GATEWAY_TIMEOUT))
@@ -52,12 +54,14 @@ class HandleRemoteRequestFailedTest {
     @Test
     fun `client throws when filter fails`() {
         assertThat({
-            ClientFilters.HandleRemoteRequestFailed({ false }).then { Response(NOT_FOUND) }(Request(GET, ""))
+            runBlocking {
+                ClientFilters.HandleRemoteRequestFailed({ false }).then { Response(NOT_FOUND) }(Request(GET, ""))
+            }
         }, throws(has(RemoteRequestFailed::status, equalTo(NOT_FOUND))))
     }
 
     @Test
-    fun `server handles custom exception`() {
+    fun `server handles custom exception`() = runBlocking {
         assertThat(ServerFilters.HandleRemoteRequestFailed().then { throw CustomUpstreamFailure }(Request(GET, "")), hasStatus(SERVICE_UNAVAILABLE).and(hasBody(CustomUpstreamFailure.localizedMessage)))
     }
 
@@ -78,7 +82,7 @@ class HandleRemoteRequestFailedTest {
         approver.assertApproved(multiStack(Request(GET, Uri.of("http://foobar/baz"))))
     }
 
-    private fun assertServerResponseForClientStatus(input: Status, responseMatcher: Matcher<Response>) = assertThat(stackWith({ status.successful || status == NOT_FOUND }, input)(Request(GET, "")), responseMatcher)
+    private suspend fun assertServerResponseForClientStatus(input: Status, responseMatcher: Matcher<Response>) = assertThat(stackWith({ status.successful || status == NOT_FOUND }, input)(Request(GET, "")), responseMatcher)
 
     private fun stackWith(acceptNotFound: Response.() -> Boolean, input: Status) =
         ServerFilters.HandleRemoteRequestFailed()
