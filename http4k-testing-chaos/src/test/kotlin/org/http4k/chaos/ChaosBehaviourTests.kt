@@ -3,10 +3,6 @@ package org.http4k.chaos
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-<<<<<<< HEAD
-
-=======
->>>>>>> replace shouldMatch with assertThat
 import com.natpryce.hamkrest.throws
 import kotlinx.coroutines.runBlocking
 import org.http4k.chaos.ChaosBehaviours.KillProcess
@@ -131,10 +127,6 @@ class NoBodyBehaviourTest : ChaosBehaviourContract() {
         assertThat(noBody.toString(), equalTo(description))
 
         assertThat(noBody.then { response }(request), hasHeader("x-http4k-chaos", "No body").and(hasBody("")))
-<<<<<<< HEAD
-=======
-        Unit
->>>>>>> replace shouldMatch with assertThat
     }
 
     @Test
@@ -196,10 +188,6 @@ class DoNothingBehaviourTest : ChaosBehaviourContract() {
         assertThat(None().toString(), equalTo(description))
 
         assertThat(None().then { response }(request), equalTo(response))
-<<<<<<< HEAD
-=======
-        Unit
->>>>>>> replace shouldMatch with assertThat
     }
 
     @Test
@@ -255,9 +243,5 @@ class VariableBehaviourTest {
         variable.current = NoBody()
         assertThat(variable.toString(), equalTo(("NoBody")))
         assertThat(variable.then { response }(request), hasHeader("x-http4k-chaos", "No body").and(hasBody("")))
-<<<<<<< HEAD
-=======
-        Unit
->>>>>>> replace shouldMatch with assertThat
     }
 }
