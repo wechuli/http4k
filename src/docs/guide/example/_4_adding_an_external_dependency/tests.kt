@@ -29,7 +29,6 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.util.Random
 
 object Matchers {
     fun Response.answerShouldBe(expected: Int) {
@@ -77,12 +76,10 @@ class RealRecorderTest : RecorderCdc() {
 }
 
 class EndToEndTest {
-    private val port = Random().nextInt(1000) + 8000
-    private val recorderPort = port + 1
     private val client = OkHttp()
     private val recorder = FakeRecorderHttp()
-    private val server = MyMathServer(0, Uri.of("http://localhost:$recorderPort"))
-    private val recorderServer = recorder.asServer(Jetty(recorderPort))
+    private val recorderServer = recorder.asServer(Jetty(0))
+    private val server by lazy { MyMathServer(0, Uri.of("http://localhost:${recorderServer.port()}")) }
 
     @BeforeEach
     fun setup() {
