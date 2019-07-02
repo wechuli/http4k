@@ -293,6 +293,14 @@ object Libs {
     const val hamkrest: String = "com.natpryce:hamkrest:" + Versions.hamkrest
 
     /**
+     * [kotlinx-coroutines-core website](https://github.com/Kotlin/kotlinx.coroutines) */
+    const val kotlinx_coroutines_core: String =
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:" + Versions.kotlinx_coroutines_core
+
+    /**
+     * [json website](https://github.com/douglascrockford/JSON-java) */
+    const val json: String = "org.json:json:" + Versions.json
+     /**
      * http://hc.apache.org/httpcomponents-core-ga
      */
     const val httpcore: String = "org.apache.httpcomponents:httpcore:" + Versions.httpcore
