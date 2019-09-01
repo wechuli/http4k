@@ -148,7 +148,7 @@ internal data class SinglePageAppRoutingHandler(
             else -> null
         }
 
-        val fallbackHandler = matchOnIndex ?: { Response(NOT_FOUND) }
+        val fallbackHandler = matchOnIndex ?: HttpHandler { Response(NOT_FOUND) }
         return matchOnStatic ?: fallbackHandler(Request(GET, pathSegments))
     }
 
