@@ -30,10 +30,12 @@ class LambdaFunction(env: Map<String, String> = System.getenv()) {
     private val initializeRequestContext = ServerFilters.InitialiseRequestContext(contexts)
 
     fun handle(request: APIGatewayProxyRequestEvent, lambdaContext: Context? = null) =
-        initializeRequestContext
-            .then(AddLambdaContextAndRequest(lambdaContext, request, contexts))
-            .then(app)(request.asHttp4k())
-            .asApiGateway()
+        runBlocking {
+            initializeRequestContext
+                .then(AddLambdaContextAndRequest(lambdaContext, request, contexts))
+                .then(app)(request.asHttp4k())
+                .asApiGateway()
+        }
 }
 
 internal fun Response.asApiGateway() = APIGatewayProxyResponseEvent().also {
