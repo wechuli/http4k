@@ -3,8 +3,8 @@ package org.http4k.routing
 import com.natpryce.hamkrest.absent
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
-import kotlinx.coroutines.runBlocking
 import com.natpryce.hamkrest.present
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Filter
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
@@ -97,7 +97,7 @@ abstract class RoutingHttpHandlerContract {
         assertThat(withBase(request), criteria)
     }
 
-    protected fun RoutingHttpHandler.matchAndInvoke(request: Request) = when (val matchResult = match(request)) {
+    protected suspend fun RoutingHttpHandler.matchAndInvoke(request: Request) = when (val matchResult = match(request)) {
         is MatchingHandler -> matchResult(request)
         else -> null
     }

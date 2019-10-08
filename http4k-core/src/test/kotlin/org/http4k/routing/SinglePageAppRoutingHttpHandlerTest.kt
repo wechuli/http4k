@@ -5,6 +5,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.present
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.ContentType
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
@@ -25,7 +26,7 @@ class SinglePageAppRoutingHttpHandlerTest : RoutingHttpHandlerContract() {
     )
 
     @Test
-    override fun `with filter - applies in correct order`() {
+    override fun `with filter - applies in correct order`() = runBlocking {
         val filtered = handler.withFilter(filterAppending("foo")).withFilter(filterAppending("bar"))
         val request = Request(GET, "/not-found")
         val criteria = isHomePage() and hasHeader("res-header", "foobar")
@@ -35,7 +36,7 @@ class SinglePageAppRoutingHttpHandlerTest : RoutingHttpHandlerContract() {
     }
 
     @Test
-    override fun `with filter - applies when not found`() {
+    override fun `with filter - applies when not found`() = runBlocking {
         val filtered = handler.withFilter(filterAppending("foo"))
         val request = Request(GET, "/not-found")
         val criteria = isHomePage() and hasHeader("res-header", "foo")
@@ -45,7 +46,7 @@ class SinglePageAppRoutingHttpHandlerTest : RoutingHttpHandlerContract() {
     }
 
     @Test
-    override fun `does not match a particular route`() {
+    override fun `does not match a particular route`() = runBlocking {
         val request = Request(GET, "/not-found")
         val criteria = isHomePage()
 
@@ -54,7 +55,7 @@ class SinglePageAppRoutingHttpHandlerTest : RoutingHttpHandlerContract() {
     }
 
     @Test
-    override fun `with base path - no longer matches original`() {
+    override fun `with base path - no longer matches original`() = runBlocking {
         val criteria = isHomePage()
         val request = Request(GET, validPath)
         val withBasePath = handler.withBasePath(prefix)
@@ -64,7 +65,7 @@ class SinglePageAppRoutingHttpHandlerTest : RoutingHttpHandlerContract() {
     }
 
     @Test
-    fun `DSL construction defaults to using public as a root path`() {
+    fun `DSL construction defaults to using public as a root path`() = runBlocking {
         val dslDefault = singlePageApp()
         val criteria = isHomePage("public")
 
