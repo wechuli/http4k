@@ -138,7 +138,7 @@ internal data class SinglePageAppRoutingHandler(
     private val staticHandler: StaticRoutingHttpHandler
 ) : RoutingHttpHandler {
 
-    override fun invoke(request: Request): Response {
+    override suspend fun invoke(request: Request): Response {
         val matchOnStatic = when (val matchResult = staticHandler.match(request)) {
             is MatchingHandler -> matchResult(request)
             else -> null
@@ -149,11 +149,11 @@ internal data class SinglePageAppRoutingHandler(
             else -> null
         }
 
-        val fallbackHandler: HttpHandler = matchOnIndex ?: HttpHandler { Response(NOT_FOUND) }
+        val fallbackHandler = matchOnIndex ?: HttpHandler { Response(NOT_FOUND) }
         return matchOnStatic ?: fallbackHandler(Request(GET, pathSegments))
     }
 
-    override fun match(request: Request) = MatchingHandler(this)
+    override suspend fun match(request: Request) = MatchingHandler(this)
 
     override fun withFilter(new: Filter) = copy(staticHandler = staticHandler.withFilter(new) as StaticRoutingHttpHandler)
 

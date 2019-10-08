@@ -60,7 +60,7 @@ class ContractRoute internal constructor(val method: Method,
      * but this function exists to enable the testing of the ContractRoute logic outside of a wider contract context.
      * This means that certain behaviour is defaulted - chiefly the generation of NOT_FOUND and BAD_REQUEST responses.
      */
-    override fun invoke(request: Request): Response {
+    override suspend fun invoke(request: Request): Response {
         return when (val matchResult = toRouter(Root).match(request)) {
             is MatchingHandler -> {
                 (meta.security?.filter ?: Filter.NoOp)

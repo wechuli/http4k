@@ -89,6 +89,9 @@ object Libs {
      */
     const val jetty_alpn_conscrypt_server: String =
             "org.eclipse.jetty:jetty-alpn-conscrypt-server:" + Versions.org_eclipse_jetty
+     /**
+      * [json website](https://github.com/douglascrockford/JSON-java) */
+     const val json: String = "org.json:json:" + Versions.json
 
     /**
      * http://www.eclipse.org/jetty
