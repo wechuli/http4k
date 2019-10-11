@@ -1,6 +1,7 @@
 package org.http4k.contract.openapi.v2
 
 import argo.jdom.JsonNode
+import kotlinx.coroutines.runBlocking
 import org.http4k.contract.ContractRendererContract
 import org.http4k.contract.bindContract
 import org.http4k.contract.contract
@@ -32,7 +33,7 @@ class OpenApi2Test : ContractRendererContract<JsonNode>(
 ) {
 
     @Test
-    fun `renders root path correctly when bind path and root path match`(approver: Approver) {
+    fun `renders root path correctly when bind path and root path match`(approver: Approver) = runBlocking {
         val router = "/" bind contract {
             renderer = rendererToUse
             security = ApiKeySecurity(Query.required("the_api_key"), { true })
@@ -44,7 +45,7 @@ class OpenApi2Test : ContractRendererContract<JsonNode>(
     }
 
     @Test
-    fun `renders Google Cloud Endpoints OAuth2`(approver: Approver) {
+    fun `renders Google Cloud Endpoints OAuth2`(approver: Approver) = runBlocking {
         val router = "/" bind contract {
             renderer = rendererToUse
             security = ImplicitOAuthSecurity(

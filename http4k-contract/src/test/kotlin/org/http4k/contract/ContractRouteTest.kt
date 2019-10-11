@@ -3,8 +3,8 @@ package org.http4k.contract
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.throws
-import org.http4k.contract.security.ApiKeySecurity
 import kotlinx.coroutines.runBlocking
+import org.http4k.contract.security.ApiKeySecurity
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.DELETE
 import org.http4k.core.Method.GET
@@ -64,7 +64,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `can build a request from a routespec - no base`() {
+    fun `can build a request from a routespec - no base`() = runBlocking {
         val path1 = Path.int().of("sue")
         val path2 = Path.string().of("bob")
         val request = (path1 / path2 meta {
@@ -103,7 +103,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `route as HttpHandler matches as expected`() {
+    fun `route as HttpHandler matches as expected`() = runBlocking {
         val route = Path.int().of("value") meta {} bindContract GET to { HttpHandler { Response(OK) } }
 
         assertThat(route(Request(GET, "/1")), hasStatus(OK))
@@ -112,7 +112,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `route as HttpHandler validates security of route`() {
+    fun `route as HttpHandler validates security of route`() = runBlocking {
         val route = Path.int().of("value") meta {
             security = ApiKeySecurity(Query.required("foo"), { true })
         } bindContract GET to { HttpHandler { Response(OK) } }
@@ -121,7 +121,7 @@ class ContractRouteTest {
     }
 
     @Test
-    fun `route as HttpHandler performs pre-extraction of route`() {
+    fun `route as HttpHandler performs pre-extraction of route`() = runBlocking {
         val route = Path.int().of("value") meta {
             queries += Query.required("foo")
         } bindContract GET to { HttpHandler { Response(OK) } }
@@ -181,7 +181,7 @@ class ContractRouteTest {
     @Test
     fun `7 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String) =HttpHandler {
+                    value7: String) = HttpHandler {
             Response(OK).body(value1 + value2 + value3 + value4 +
                 value5 + value6 + value7)
         }
@@ -195,7 +195,7 @@ class ContractRouteTest {
     @Test
     fun `8 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String) =HttpHandler {
+                    value7: String, value8: String) = HttpHandler {
             Response(OK).body(value1 + value2 +
                 value3 + value4 + value5 + value6 + value7 + value8)
         }
@@ -209,7 +209,7 @@ class ContractRouteTest {
     @Test
     fun `9 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String, value9: String) =HttpHandler {
+                    value7: String, value8: String, value9: String) = HttpHandler {
             Response(OK).body(value1 +
                 value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9)
         }
@@ -224,7 +224,7 @@ class ContractRouteTest {
     @Test
     fun `10 parts - matches route`() = runBlocking {
         fun matched(value1: String, value2: String, value3: String, value4: String, value5: String, value6: String,
-                    value7: String, value8: String, value9: String, value10: String) =HttpHandler {
+                    value7: String, value8: String, value9: String, value10: String) = HttpHandler {
             Response(OK)
                 .body(value1 + value2 + value3 + value4 + value5 + value6 + value7 + value8 + value9 + value10)
         }

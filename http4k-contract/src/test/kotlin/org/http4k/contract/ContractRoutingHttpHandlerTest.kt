@@ -278,7 +278,7 @@ abstract class ContractRoutingHttpHandlerContract : RoutingHttpHandlerContract()
     }
 
     @Test
-    fun `can all paramter checking by overriding pre-request-extraction`() {
+    fun `can all paramter checking by overriding pre-request-extraction`() = runBlocking {
         assertThat(handler(Request(GET, "/bad-request-body-ignore-all")), hasStatus(OK))
     }
 }

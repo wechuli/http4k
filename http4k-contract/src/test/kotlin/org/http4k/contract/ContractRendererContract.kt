@@ -17,7 +17,6 @@ import org.http4k.core.ContentType.Companion.OCTET_STREAM
 import org.http4k.core.ContentType.Companion.TEXT_PLAIN
 import org.http4k.core.Credentials
 import org.http4k.core.HttpHandler
-import org.http4k.core.Method
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Method.PUT
@@ -206,7 +205,7 @@ abstract class ContractRendererContract<NODE>(private val json: Json<NODE>, prot
     }
 
     @Test
-    fun `when enabled renders description including its own path`(approver: Approver) {
+    fun `when enabled renders description including its own path`(approver: Approver) = runBlocking {
         val router = "/" bind contract {
             renderer = rendererToUse
             security = ApiKeySecurity(Query.required("the_api_key"), { true })

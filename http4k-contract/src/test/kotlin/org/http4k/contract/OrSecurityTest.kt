@@ -2,6 +2,7 @@ package org.http4k.contract
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.contract.security.ApiKeySecurity
 import org.http4k.contract.security.or
 import org.http4k.core.HttpHandler
@@ -34,7 +35,7 @@ class OrSecurityTest {
     }
 
     @Test
-    fun `requires either securities to pass to succeed`() {
+    fun `requires either securities to pass to succeed`() = runBlocking {
         val handler = composite.filter(next)
         assertThat(handler(Request(GET, "")), hasStatus(UNAUTHORIZED))
         assertThat(handler(Request(GET, "?first=true")), hasStatus(OK))
