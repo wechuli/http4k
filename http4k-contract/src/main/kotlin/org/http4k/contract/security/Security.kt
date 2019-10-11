@@ -34,8 +34,12 @@ internal data class OrSecurity(internal val all: List<Security>) : Security, Ite
 
     override val filter = Filter { next ->
         {
-            all.asSequence().map { sec -> sec.filter.then(next)(it) }
-                .firstOrNull { it.status != UNAUTHORIZED } ?: Response(UNAUTHORIZED)
+            all.fold(Response(UNAUTHORIZED)) { acc, sec ->
+                when (acc.status) {
+                    UNAUTHORIZED -> sec.filter.then(next)(it)
+                    else -> acc
+                }
+            }
         }
     }
 }

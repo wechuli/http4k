@@ -61,7 +61,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `generates dummy access_token and id_token if an oidc request`() {
+    fun `generates dummy access_token and id_token if an oidc request`() = runBlocking {
         val codeForIdTokenRequest = codes.create(request, authRequest.copy(scopes = listOf("openid")), Response(OK)).get()
 
         val response = handler(Request(POST, "/token")
