@@ -45,21 +45,21 @@ class HealthTest {
     }
 
     @Test
-    fun `readiness with three checks`() {
+    fun `readiness with three checks`() = runBlocking {
         val checks = listOf(check(true, "first"), check(true, "second"), check(false, "third"))
         assertThat(Health(checks = checks)(Request(GET, "/readiness")),
             hasStatus(SERVICE_UNAVAILABLE).and(hasBody("overall=false\nfirst=true\nsecond=true\nthird=false [foobar]")))
     }
 
     @Test
-    fun `readiness with four checks`() {
+    fun `readiness with four checks`() = runBlocking {
         val checks = listOf(check(true, "first"), check(true, "second"), check(true, "third"), check(false, "fourth"))
         assertThat(Health(checks = checks)(Request(GET, "/readiness")),
             hasStatus(SERVICE_UNAVAILABLE).and(hasBody("overall=false\nfirst=true\nsecond=true\nthird=true\nfourth=false [foobar]")))
     }
 
     @Test
-    fun `readiness with three passing checks`() {
+    fun `readiness with three passing checks`() = runBlocking {
         val checks = listOf(check(true, "first"), check(true, "second"), check(true, "third"))
         assertThat(Health(checks = checks)(Request(GET, "/readiness")),
             hasStatus(OK).and(hasBody("overall=true\nfirst=true\nsecond=true\nthird=true")))

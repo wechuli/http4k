@@ -3,7 +3,6 @@ package tutorials.tdding_http4k._4
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
-import guide.example._4_adding_an_external_dependency.Matchers.answerShouldBe
 import kotlinx.coroutines.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.HttpHandler

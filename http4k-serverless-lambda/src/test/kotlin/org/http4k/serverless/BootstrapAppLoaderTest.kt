@@ -24,7 +24,7 @@ class BootstrapAppLoaderTest {
     }
 
     @Test
-    fun `loads the expected app if it implements the AppLoaderWithContexts interface`() {
+    fun `loads the expected app if it implements the AppLoaderWithContexts interface`() = runBlocking {
         val contexts = RequestContexts()
         val app = BootstrapAppLoader(mapOf(HTTP4K_BOOTSTRAP_CLASS to TestAppWithContexts::class.java.name), contexts)
         val appWithContext = ServerFilters.InitialiseRequestContext(contexts).then(app)

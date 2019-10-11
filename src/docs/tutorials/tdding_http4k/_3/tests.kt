@@ -2,7 +2,6 @@ package tutorials.tdding_http4k._3
 
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
-import guide.example._3_adding_the_second_endpoint.Matchers.answerShouldBe
 import kotlinx.coroutines.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.Method.GET

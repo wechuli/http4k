@@ -16,7 +16,7 @@ import org.http4k.routing.routes
 class Library(rawHttp: HttpHandler) {
     private val http = ClientFilters.HandleRemoteRequestFailed().then(rawHttp)
 
-    fun titles(): List<String> =
+    suspend fun titles(): List<String> =
         http(Request(GET, "/titles")).bodyString().split(",").map { it.trim() }.sorted()
 }
 

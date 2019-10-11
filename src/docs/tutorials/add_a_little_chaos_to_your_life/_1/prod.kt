@@ -11,7 +11,7 @@ import org.http4k.routing.bind
 import org.http4k.routing.routes
 
 class Library(private val rawHttp: HttpHandler) {
-    fun titles(): List<String> {
+    suspend fun titles(): List<String> {
         val response = rawHttp(Request(GET, "/titles"))
         return when (OK) {
             response.status -> response.bodyString().split(",").map { it.trim() }.sorted()

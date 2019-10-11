@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.throws
+import kotlinx.coroutines.runBlocking
 import org.http4k.cloudnative.RemoteRequestFailed
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
@@ -27,27 +28,27 @@ fun FakeLibrary(succeed: Boolean) = HttpHandler {
 
 class LibraryTest {
     @Test
-    fun `retrieve sorted list of books`() {
+    fun `retrieve sorted list of books`() = runBlocking {
         val remoteApi: HttpHandler = FakeLibrary(succeed = true)
         assertThat(Library(remoteApi).titles(), equalTo(listOf("1984", "Brave New World", "Fahrenheit 451")))
     }
 
     @Test
-    fun `library call fails`() {
+    fun `library call fails`() = runBlocking {
         val remoteApi: HttpHandler = FakeLibrary(succeed = false)
-        assertThat({ Library(remoteApi).titles() }, throws<RemoteRequestFailed>())
+        assertThat({ runBlocking { Library(remoteApi).titles() } }, throws<RemoteRequestFailed>())
     }
 }
 
 class ServerTest {
     @Test
-    fun `retrieve sorted list of books`() {
+    fun `retrieve sorted list of books`() = runBlocking {
         val remoteApi: HttpHandler = FakeLibrary(succeed = true)
         assertThat(Server(remoteApi)(Request(GET, "/api/books")), hasStatus(OK).and(hasBody("1984,Brave New World,Fahrenheit 451")))
     }
 
     @Test
-    fun `library call fails`() {
+    fun `library call fails`() = runBlocking {
         val remoteApi: HttpHandler = FakeLibrary(succeed = false)
         assertThat(Server(remoteApi)(Request(GET, "/api/books")), hasStatus(SERVICE_UNAVAILABLE))
     }

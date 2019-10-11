@@ -2,7 +2,6 @@ package tutorials.tdding_http4k._2
 
 import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
-import guide.example._2_adding_the_first_endpoint.Matchers.answerShouldBe
 import kotlinx.coroutines.runBlocking
 import org.http4k.client.OkHttp
 import org.http4k.core.Method.GET
@@ -29,12 +28,12 @@ class EndToEndTest {
     private val server = MyMathServer(0)
 
     @BeforeEach
-    fun setup(): Unit {
+    fun setup() {
         server.start()
     }
 
     @AfterEach
-    fun teardown(): Unit {
+    fun teardown() {
         server.stop()
     }
 
