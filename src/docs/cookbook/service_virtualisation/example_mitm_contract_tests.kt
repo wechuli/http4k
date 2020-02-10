@@ -2,6 +2,7 @@ package cookbook.service_virtualisation.mitm
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.ApacheClient
 import org.http4k.core.Credentials
 import org.http4k.core.Method.POST
@@ -50,7 +51,7 @@ class WordCounterClient(baseUri: Uri) {
         .then(ClientFilters.HandleRemoteRequestFailed())
         .then(ApacheClient())
 
-    fun wordCount(name: String): Int = http(Request(POST, "/count").body(name)).bodyString().toInt()
+    suspend fun wordCount(name: String): Int = http(Request(POST, "/count").body(name)).bodyString().toInt()
 }
 
 /**
@@ -62,13 +63,13 @@ interface WordCounterContract {
 
     @Test
     @JvmDefault
-    fun `count the number of words`() {
+    fun `count the number of words`() = runBlocking {
         assertThat(WordCounterClient(uri).wordCount("A random string with 6 words"), equalTo(6))
     }
 
     @Test
     @JvmDefault
-    fun `empty string has zero words`() {
+    fun `empty string has zero words`() = runBlocking {
         assertThat(WordCounterClient(uri).wordCount(""), equalTo(0))
     }
 }

@@ -31,7 +31,7 @@ class FakeGitHub : HttpHandler {
                 )
             )
 
-    override fun invoke(p1: Request) = app(p1)
+    override suspend fun invoke(p1: Request) = app(p1)
 
     companion object {
         val credentials = Credentials("user", "password")

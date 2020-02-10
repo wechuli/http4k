@@ -1,6 +1,7 @@
 package org.http4k.filter
 
 import org.http4k.core.Filter
+import org.http4k.core.HttpHandler
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.BAD_REQUEST
@@ -30,15 +31,14 @@ object TrafficFilters {
     object ReplayFrom {
         operator fun invoke(replay: Replay,
                             matchFn: (Request, Request) -> Boolean = { received, stored -> received.toString() != stored.toString() }
-        ): Filter = Filter {
+        ): Filter = Filter { next ->
             val zipped = replay.requests().zip(replay.responses()).iterator()
 
-            val responder = { received: Request ->
+            HttpHandler {
                 val (stored, response) = zipped.next()
-                if (matchFn(received, stored)) Response(BAD_REQUEST)
+                if (matchFn(it, stored)) Response(BAD_REQUEST)
                 else response
             }
-            responder
         }
     }
 }

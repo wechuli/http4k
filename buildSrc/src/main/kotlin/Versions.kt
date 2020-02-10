@@ -30,11 +30,15 @@ object Versions {
 
     const val com_github_kt3k_coveralls_gradle_plugin: String = "2.10.1"
 
+    const val kotlinx_coroutines_core: String = "1.2.2"
+
     const val net_saliman_cobertura_gradle_plugin: String = "3.0.0"
 
     const val com_jfrog_bintray_gradle_plugin: String = "1.8.5"
 
     const val openapi_generator_gradle_plugin: String = "4.3.0"
+
+
 
     const val javax_websocket_server_impl: String = "9.4.28.v20200408"
 
@@ -120,4 +124,4 @@ object Versions {
  */
 val PluginDependenciesSpec.buildSrcVersions: PluginDependencySpec
     inline get() =
-            id("de.fayard.buildSrcVersions").version(Versions.de_fayard_buildsrcversions_gradle_plugin)
+        id("de.fayard.buildSrcVersions").version(Versions.de_fayard_buildsrcversions_gradle_plugin)

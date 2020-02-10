@@ -27,7 +27,7 @@ class FakeSystem : HttpHandler {
         chaosEngine.disable()
     }
 
-    override fun invoke(p1: Request) = app(p1)
+    override suspend fun invoke(p1: Request) = app(p1)
 }
 
 fun main() {

@@ -2,6 +2,7 @@ package cookbook.service_virtualisation.junit
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.ApacheClient
 import org.http4k.core.Credentials
 import org.http4k.core.HttpHandler
@@ -32,15 +33,15 @@ import java.nio.file.Paths
  * This client wraps the calls to a remote WordCounter service
  */
 class WordCounterClient(private val http: HttpHandler) {
-    fun wordCount(name: String): Int = http(Request(POST, "/count").body(name)).bodyString().toInt()
+    suspend fun wordCount(name: String): Int = http(Request(POST, "/count").body(name)).bodyString().toInt()
 }
 
 /**
  * This is our producing app
  */
 class WordCounterApp : HttpHandler {
-    override fun invoke(req: Request) = Response(OK).body(
-        req.bodyString().run { if (isBlank()) 0 else split(" ").size }.toString()
+    override suspend fun invoke(request: Request) = Response(OK).body(
+        request.bodyString().run { if (isBlank()) 0 else split(" ").size }.toString()
     )
 }
 
@@ -52,13 +53,13 @@ interface WordCounterContract {
 
     @Test
     @JvmDefault
-    fun `count the number of words`(handler: HttpHandler) {
+    fun `count the number of words`(handler: HttpHandler) = runBlocking {
         assertThat(WordCounterClient(handler).wordCount("A random string with 6 words"), equalTo(6))
     }
 
     @Test
     @JvmDefault
-    fun `empty string has zero words`(handler: HttpHandler) {
+    fun `empty string has zero words`(handler: HttpHandler) = runBlocking {
         assertThat(WordCounterClient(handler).wordCount(""), equalTo(0))
     }
 }
