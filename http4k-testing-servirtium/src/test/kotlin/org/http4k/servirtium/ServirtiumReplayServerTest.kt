@@ -1,5 +1,6 @@
 package org.http4k.servirtium
 
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Status.Companion.NOT_IMPLEMENTED
@@ -46,13 +47,13 @@ class ServirtiumReplayServerTest : TestContract {
 
     @Test
     @Disabled("fails on travis... need to investigate")
-    fun `unexpected content`(approver: Approver) {
+    fun `unexpected content`(approver: Approver) = runBlocking {
         approver.assertApproved(createHandler()(Request(GET, "/foo")), NOT_IMPLEMENTED)
     }
 
     @Test
     @Disabled("fails on travis... need to investigate")
-    fun `too many requests`(approver: Approver) {
+    fun `too many requests`(approver: Approver) = runBlocking {
         super.scenario()
         val httpMessage = createHandler()(Request(GET, "/foo")).run {
             body(bodyString()

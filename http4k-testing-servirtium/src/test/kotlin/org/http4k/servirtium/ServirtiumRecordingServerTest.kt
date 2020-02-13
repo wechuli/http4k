@@ -1,5 +1,6 @@
 package org.http4k.servirtium
 
+import org.http4k.core.HttpHandler
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
@@ -21,7 +22,7 @@ class ServirtiumRecordingServerTest : TestContract {
 
     private val storage = InteractionStorage.InMemory()
 
-    private val app = { _: Request -> Response(OK).body("hello") }.asServer(SunHttp(0))
+    private val app = HttpHandler { _: Request -> Response(OK).body("hello") }.asServer(SunHttp(0))
 
     override lateinit var control: ServirtiumServer
 

@@ -4,6 +4,7 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.containsSubstring
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -22,19 +23,19 @@ class ReplayExtensionTests {
     }
 
     @Test
-    fun `replayingMatchingContent replays matching content ok, applying the manipulations to make request match`() {
+    fun `replayingMatchingContent replays matching content ok, applying the manipulations to make request match`() = runBlocking {
         assertThat(http(request), equalTo(response))
     }
 
     @Test
-    fun `replayingMatchingContent blows up with non-matching request`() {
+    fun `replayingMatchingContent blows up with non-matching request`() = runBlocking {
         assertThat(http(Request(GET, "/foobar")),
             hasStatus(NOT_IMPLEMENTED).and(
                 hasBody(containsSubstring("Unexpected request received for Interaction 0 ==>"))))
     }
 
     @Test
-    fun `replayingMatchingContent blows up when more requests than interactions`() {
+    fun `replayingMatchingContent blows up when more requests than interactions`() = runBlocking {
         assertThat(http(request), equalTo(response))
         assertThat(http(request),
             hasStatus(NOT_IMPLEMENTED).and(

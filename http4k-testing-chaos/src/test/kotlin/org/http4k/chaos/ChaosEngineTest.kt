@@ -4,11 +4,8 @@ import com.natpryce.hamkrest.and
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import kotlinx.coroutines.runBlocking
-import org.http4k.chaos.ChaosStages.Wait
-import org.http4k.chaos.ChaosTriggers.Always
 import org.http4k.chaos.ChaosBehaviours.ReturnStatus
 import org.http4k.contract.security.ApiKeySecurity
-import org.http4k.contract.security.NoSecurity
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
@@ -65,10 +62,10 @@ class ChaosEngineTest {
     }
 
     @Test
-    fun `can convert a normal app to support the set of remote Chaos endpoints`() {
+    fun `can convert a normal app to support the set of remote Chaos endpoints`() = runBlocking {
         val app = routes("/" bind GET to { Response(OK) })
 
-        val engine = ChaosEngine(ChaosBehaviours.ReturnStatus(NOT_FOUND))
+        val engine = ChaosEngine(ReturnStatus(NOT_FOUND))
 
         val appWithChaos = app.withChaosApi(engine)
 
@@ -139,8 +136,8 @@ class ChaosEngineTest {
     }
 
     @Test
-    fun `chaos API is available as openapi JSON`(approver: Approver) {
-        val app = { _: Request -> Response(I_M_A_TEAPOT) }
+    fun `chaos API is available as openapi JSON`(approver: Approver) = runBlocking {
+        val app = HttpHandler { Response(I_M_A_TEAPOT) }
 
         approver.assertApproved(app.withChaosApi(clock = FixedClock)(Request(GET, "/chaos")))
     }

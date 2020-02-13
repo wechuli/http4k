@@ -16,7 +16,7 @@ import org.http4k.events.then
 import org.http4k.filter.ResponseFilters
 import org.http4k.format.Jackson
 
-fun main() {
+suspend fun main() {
     // Stack filters for Events in the same way as HttpHandlers to transform or add metadata to the Events.
     // We use AutoJsonEvents (here with Jackson) to handle the final serialisation process.
     val events =
@@ -25,7 +25,7 @@ fun main() {
             .then(AddRequestCount())
             .then(AutoJsonEvents(Jackson))
 
-    val app: HttpHandler = { _: Request -> Response(OK).body("hello") }
+    val app = HttpHandler { Response(OK).body("hello") }
 
     val appWithEvents =
         ResponseFilters.ReportHttpTransaction {

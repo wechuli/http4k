@@ -6,10 +6,9 @@ import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.has
 import com.natpryce.hamkrest.throws
+import kotlinx.coroutines.runBlocking
 import org.http4k.cloudnative.RemoteRequestFailed
 import org.http4k.core.Filter
-import kotlinx.coroutines.runBlocking
-import org.http4k.cloudnative.UpstreamRequestFailed
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -66,7 +65,7 @@ class HandleRemoteRequestFailedTest {
     }
 
     @Test
-    fun `multi stack errors looks sane`(approver: Approver) {
+    fun `multi stack errors looks sane`(approver: Approver) = runBlocking {
         fun stack(clientUri: String) = ServerFilters.HandleRemoteRequestFailed()
             .then(Filter { next ->
                 {

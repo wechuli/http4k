@@ -27,10 +27,10 @@ class FakeSystem : HttpHandler {
         chaosEngine.disable()
     }
 
-    override suspend fun invoke(p1: Request) = app(p1)
+    override suspend fun invoke(request: Request) = app(request)
 }
 
-fun main() {
+suspend fun main() {
     val fakeSystem = FakeSystem()
     println(fakeSystem(Request(GET, "/hello")))
 

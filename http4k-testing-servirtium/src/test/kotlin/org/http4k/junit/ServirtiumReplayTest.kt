@@ -2,6 +2,7 @@ package org.http4k.junit
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -18,7 +19,7 @@ class ServirtiumReplayTest {
     private val storage = InMemory()
 
     @Test
-    fun `replays traffic from the recording`() {
+    fun `replays traffic from the recording`() = runBlocking {
         javaClass.getResourceAsStream("/org/http4k/junit/storedTraffic.txt").reader().use { r ->
             storage("name.hashCode").accept(r.readText().toByteArray())
         }

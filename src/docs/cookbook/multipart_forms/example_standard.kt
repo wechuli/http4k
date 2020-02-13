@@ -2,7 +2,6 @@ package cookbook.multipart_forms
 
 import org.http4k.client.ApacheClient
 import org.http4k.core.ContentType
-import org.http4k.core.FormFile
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.POST
 import org.http4k.core.MultipartFormBody

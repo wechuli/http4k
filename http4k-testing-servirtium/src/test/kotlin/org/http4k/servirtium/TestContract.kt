@@ -2,6 +2,7 @@ package org.http4k.servirtium
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -19,7 +20,7 @@ interface TestContract {
 
     @Test
     @JvmDefault
-    fun scenario() {
+    fun scenario() = runBlocking {
         val handler = createHandler()
 
         control.addNote("this is a note")

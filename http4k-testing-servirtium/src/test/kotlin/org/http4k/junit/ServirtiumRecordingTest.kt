@@ -2,6 +2,7 @@ package org.http4k.junit
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
@@ -23,7 +24,7 @@ class ServirtiumRecordingTest {
     private val storage = InteractionStorage.InMemory()
 
     @Test
-    fun `records the values into the recording`(approver: Approver) {
+    fun `records the values into the recording`(approver: Approver) = runBlocking {
         val stub = JUnitStub(AContract)
 
         val originalRequest = Request(POST, "/foo")
@@ -36,7 +37,7 @@ class ServirtiumRecordingTest {
             .header("toBeRemoved", "respHeaderValue2")
             .body("helloWorldResponse")
 
-        val httpHandler = { it: Request ->
+        val httpHandler = HttpHandler {
             assertThat(it, equalTo(originalRequest))
             originalResponse
         }

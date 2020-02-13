@@ -51,7 +51,7 @@ class AuthenticationCompleteTest {
     }
 
     @Test
-    fun `redirects on successful login, with a fragment if requested`() {
+    fun `redirects on successful login, with a fragment if requested`() = runBlocking {
         val response = underTest(Request(POST, "/login").withAuthorization(authorizationRequest.copy(responseMode = Fragment), responseMode = Fragment))
 
         assertThat(response, hasStatus(SEE_OTHER)
@@ -74,7 +74,7 @@ class AuthenticationCompleteTest {
     }
 
     @Test
-    fun `includes id_token if response_type requires it, with code if requested`() {
+    fun `includes id_token if response_type requires it, with code if requested`() = runBlocking {
         val response = underTest(Request(POST, "/login").withAuthorization(authorizationRequest, CodeIdToken, Query))
 
         assertThat(response, hasStatus(SEE_OTHER)

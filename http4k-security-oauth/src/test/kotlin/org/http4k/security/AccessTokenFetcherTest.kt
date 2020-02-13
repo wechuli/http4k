@@ -38,8 +38,8 @@ internal class AccessTokenFetcherTest {
     }
 
     @Test
-    fun `can get access token from json body for content-type without directive`() {
-        val api = { _: Request ->
+    fun `can get access token from json body for content-type without directive`() = runBlocking {
+        val api = HttpHandler {
             Response(OK)
                 .header("Content-Type", "application/json")
                 .body("{\"access_token\": \"some-access-token\"}")

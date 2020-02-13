@@ -91,7 +91,7 @@ object RemoteChaosApi {
         }.toLens()
 
         val jsonLens = Body.json().toLens()
-        val showCurrentStatus: HttpHandler = {
+        val showCurrentStatus = HttpHandler {
             Response(OK).with(jsonLens of chaosStatus(if (engine.isEnabled()) engine.toString() else "none"))
         }
 
