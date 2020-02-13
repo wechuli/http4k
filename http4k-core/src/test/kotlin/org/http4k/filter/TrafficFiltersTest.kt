@@ -43,7 +43,7 @@ class TrafficFiltersTest {
     }
 
     @Test
-    fun `ReplayFrom serves stored requests later or returns 400`() {
+    fun `ReplayFrom serves stored requests later or returns 400`() = runBlocking {
         val cache = ReadWriteStream.Memory()
         cache[request] = response
         cache[request] = response

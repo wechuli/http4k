@@ -1,5 +1,6 @@
 package org.http4k.servirtium
 
+import kotlinx.coroutines.runBlocking
 import org.http4k.client.JavaHttpClient
 import org.http4k.core.Body
 import org.http4k.core.Credentials
@@ -35,10 +36,13 @@ class GitHub @JvmOverloads constructor(private val owner: String,
         .then(http)
 
     override fun invoke(name: String): InteractionStorage = object : InteractionStorage {
-        override fun get() = Body.auto<GithubFile>().toLens()(
-            authed(Request(GET, "/repos/$owner/$repo/contents/$basePath/${name.replace(" ", "%20")}.md")
-                .with(Query.optional("ref") of reference)
-            )).decoded
+        override fun get() =
+            Body.auto<GithubFile>().toLens().invoke(
+                runBlocking {
+                    authed(Request(GET, "/repos/$owner/$repo/contents/$basePath/${name.replace(" ", "%20")}.md")
+                        .with(Query.optional("ref") of reference))
+                }
+            ).decoded
 
         override fun clean() = throw UnsupportedOperationException("cannot clean a github file!")
 

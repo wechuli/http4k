@@ -56,7 +56,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `gzip request and add content encoding`() {
+    fun `gzip request and add content encoding`() = runBlocking {
         val handler = RequestFilters.GZip().then {
             assertThat(it, hasBody(equalTo(Body("foobar").gzipped().body)).and(hasHeader("content-encoding", "gzip")))
             Response(OK)
@@ -65,7 +65,7 @@ class RequestFiltersTest {
     }
 
     @Test
-    fun `gzip request and add do not content encoding where request is empty`() {
+    fun `gzip request and add do not content encoding where request is empty`() = runBlocking {
         val handler = RequestFilters.GZip().then {
             assertThat(it, hasBody(equalTo(Body.EMPTY)).and(!hasHeader("content-encoding", "gzip")))
             Response(OK)

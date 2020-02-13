@@ -8,6 +8,10 @@ import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.HttpHandler
+import org.http4k.core.Method
+import org.http4k.core.Request
+import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.then
 import org.http4k.filter.SamplingDecision.Companion.DO_NOT_SAMPLE
@@ -48,7 +52,7 @@ class RequestTracingTest {
     }
 
     @Test
-    fun `request traces may be copied to child threads`() {
+    fun `request traces may be copied to child threads`() = runBlocking {
         val originalTraceId = TraceId("originalTrace")
         val originalSpanId = TraceId("originalSpan")
         val originalParentSpanId = TraceId("originalParentSpanId")
@@ -65,15 +69,17 @@ class RequestTracingTest {
             Response(OK)
         }
 
-        val executor = Executors.newSingleThreadExecutor()
-        val simpleProxyServer: HttpHandler = ServerFilters.RequestTracing().then {
+        val fn: suspend (Request) -> Response = {
             val traceForOuterThread = ZipkinTraces.forCurrentThread()
             val clientTask = {
-                ZipkinTraces.setForCurrentThread(traceForOuterThread)
-                client(Request(GET, "/somePath"))
+                runBlocking {
+                    ZipkinTraces.setForCurrentThread(traceForOuterThread)
+                    client(Request(GET, "/somePath"))
+                }
             }
-            executor.submit(clientTask).get()
+            Executors.newSingleThreadExecutor().submit(clientTask).get()
         }
+        val simpleProxyServer: HttpHandler = ServerFilters.RequestTracing().then(fn)
 
         val response = simpleProxyServer(ZipkinTraces(traces, Request(GET, "")))
 

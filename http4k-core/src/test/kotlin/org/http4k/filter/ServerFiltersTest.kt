@@ -206,7 +206,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `handle empty messages with incorrect content-encoding`() {
+        fun `handle empty messages with incorrect content-encoding`() = runBlocking {
             val handler = ServerFilters.GZip().then {
                 assertThat(it, hasBody(equalTo(Body.EMPTY)))
                 Response(OK).body(it.body)
@@ -262,7 +262,7 @@ class ServerFiltersTest {
     @Nested
     inner class GzipStreamFilters {
         @Test
-        fun `gunzip request and gzip response`() {
+        fun `gunzip request and gzip response`() = runBlocking {
             val handler = ServerFilters.GZip(Streaming).then {
                 assertThat(it, hasBody(equalTo("hello")))
                 Response(OK).body(Body("hello"))
@@ -273,7 +273,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `handle empty messages with incorrect content-encoding`() {
+        fun `handle empty messages with incorrect content-encoding`() = runBlocking {
             val handler = ServerFilters.GZip(Streaming).then {
                 assertThat(it, hasBody(equalTo(Body.EMPTY)))
                 Response(OK).body(it.body)
@@ -284,7 +284,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `passes through non-gzipped request`() {
+        fun `passes through non-gzipped request`() = runBlocking {
             val handler = ServerFilters.GZip(Streaming).then {
                 assertThat(it, hasBody("hello"))
                 Response(OK).body("hello")
@@ -294,7 +294,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `gunzip request and gzip response with matching content type`() {
+        fun `gunzip request and gzip response with matching content type`() = runBlocking {
             val handler = ServerFilters.GZipContentTypes(setOf(ContentType.TEXT_PLAIN), Streaming).then {
                 assertThat(it, hasBody(equalTo("hello")))
                 Response(OK).header("content-type", "text/plain").body(Body("hello"))
@@ -305,7 +305,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `gunzip request and do not gzip response with unmatched content type`() {
+        fun `gunzip request and do not gzip response with unmatched content type`() = runBlocking {
             val handler = ServerFilters.GZipContentTypes(setOf(TEXT_HTML), Streaming).then {
                 assertThat(it, hasBody(equalTo("hello")))
                 Response(OK).header("content-type", "text/plain").body(it.body)
@@ -316,7 +316,7 @@ class ServerFiltersTest {
         }
 
         @Test
-        fun `passes through non-gzipped request despite content type`() {
+        fun `passes through non-gzipped request despite content type`() = runBlocking {
             val handler = ServerFilters.GZipContentTypes(setOf(TEXT_HTML), Streaming).then {
                 assertThat(it, hasBody("hello"))
                 Response(OK).body("hello")
@@ -376,8 +376,8 @@ class ServerFiltersTest {
     fun `initialises request context for use further down the stack`() = runBlocking {
         val contexts = RequestContexts()
         val handler = ServerFilters.InitialiseRequestContext(contexts)
-                .then(Filter { next ->
-                    {
+            .then(Filter { next ->
+                {
                     contexts[it].set("foo", "manchu")
                     next(it)
                 }
