@@ -6,6 +6,7 @@ import com.natpryce.hamkrest.equalTo
 import com.natpryce.hamkrest.has
 import kotlinx.coroutines.runBlocking
 import org.http4k.core.HttpHandler
+import org.http4k.core.Method.GET
 import org.http4k.core.Method.POST
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -100,7 +101,7 @@ class ServirtiumReplayIntegrationTest : TestContract {
     fun `unexpected content`(handler: HttpHandler) {
         runBlocking {
             try {
-                handler(Request(POST, "/foobar").body("welcome"))
+                handler(Request(GET, "/foobar").body("welcome"))
                 throw IllegalArgumentException()
             } catch (e: AssertionFailedError) {
                 assertThat(e, has(AssertionFailedError::getLocalizedMessage, containsSubstring("Unexpected request received for Interaction 0")))
