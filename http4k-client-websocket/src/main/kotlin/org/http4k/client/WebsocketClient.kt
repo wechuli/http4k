@@ -3,6 +3,7 @@ package org.http4k.client
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
 import org.http4k.core.Headers
 import org.http4k.core.Method.GET
@@ -32,10 +33,10 @@ object WebsocketClient {
      * Provides a client-side Websocket instance connected to a remote Websocket. The resultant object
      * can be have listeners attached to it. Optionally pass a WsConsumer which will be called onConnect
      */
-    fun nonBlocking(uri: Uri, headers: Headers = emptyList(), timeout: Duration = ZERO, onConnect: WsConsumer = {}): Websocket {
+    fun nonBlocking(uri: Uri, headers: Headers = emptyList(), timeout: Duration = ZERO, scope: CoroutineScope = GlobalScope, doOnError: suspend (Throwable) -> Unit = {}, onConnect: HandleWs = {}): Websocket {
         val socket = AtomicReference<PushPullAdaptingWebSocket>()
         val client = NonBlockingClient(uri, headers, timeout, WsConsumer(onConnect), socket, scope)
-        socket.set(AdaptingWebSocket(uri, client).apply { onError(onError) })
+        socket.set(AdaptingWebSocket(uri, client).also { runBlocking { it.onError(doOnError) } })
         client.connect()
         return socket.get()
     }

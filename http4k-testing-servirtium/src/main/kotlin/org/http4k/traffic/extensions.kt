@@ -23,7 +23,7 @@ fun Replay.replayingMatchingContent(manipulations: (Request) -> Request = { it }
     val interactions = requests().zip(responses()).iterator()
     val count = AtomicInteger()
 
-    return HttpHandler {
+    return HttpHandler { received ->
         val index = count.getAndIncrement()
 
         when {
@@ -35,8 +35,6 @@ fun Replay.replayingMatchingContent(manipulations: (Request) -> Request = { it }
                 else renderMismatch(index, expectedReq.toString(), actual)
             }
             else -> renderUnexpectedInteration(interactionCount, index + 1)
-            }
-            else -> renderMismatch(index, "", it.toString())
         }
     }
 }

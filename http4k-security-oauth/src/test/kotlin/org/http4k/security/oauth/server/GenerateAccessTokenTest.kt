@@ -79,7 +79,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `allowing refreshing a token`() {
+    fun `allowing refreshing a token`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "refresh_token")
@@ -97,7 +97,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `bad request for missing refresh_token parameter`() {
+    fun `bad request for missing refresh_token parameter`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "refresh_token")
@@ -108,7 +108,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `validates credentials for refresh tokens`() {
+    fun `validates credentials for refresh tokens`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "refresh_token")
@@ -120,7 +120,7 @@ class GenerateAccessTokenTest {
     }
 
     @Test
-    fun `copes with error from actual refresh tokens`() {
+    fun `copes with error from actual refresh tokens`() = runBlocking {
         val response = handler(Request(POST, "/token")
             .header("content-type", ContentType.APPLICATION_FORM_URLENCODED.value)
             .form("grant_type", "refresh_token")

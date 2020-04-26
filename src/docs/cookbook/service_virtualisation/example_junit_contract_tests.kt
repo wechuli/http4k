@@ -95,7 +95,7 @@ class InMemoryRecordingWordCounterTest : WordCounterContract {
     val record = ServirtiumRecording("WordCounter", app, Disk(File(".")))
 
     @AfterEach
-    fun after(handler: HttpHandler) {
+    fun after(handler: HttpHandler) = runBlocking {
         val name = "this traffic is not recorded"
         println(name + ": " + WordCounterClient(handler).wordCount(name))
     }

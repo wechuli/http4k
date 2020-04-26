@@ -1,5 +1,6 @@
 package org.http4k.routing
 
+import kotlinx.coroutines.runBlocking
 import org.http4k.core.Body
 import org.http4k.core.ContentType
 import org.http4k.core.ContentType.Companion.OCTET_STREAM
@@ -33,8 +34,8 @@ internal class ResourceLoadingHandler(private val pathSegments: String,
             val lookupType = extMap.forFile(path)
             if (request.method == GET && lookupType != OCTET_STREAM) {
                 Response(OK)
-                        .header("Content-Type", lookupType.value)
-                        .body(Body(url.openStream()))
+                    .header("Content-Type", lookupType.value)
+                    .body(Body(url.openStream()))
             } else Response(NOT_FOUND)
         } ?: Response(NOT_FOUND)
     } else Response(NOT_FOUND)
@@ -60,15 +61,15 @@ internal data class StaticRoutingHttpHandler(private val pathSegments: String,
     private val handlerWithFilter = filter.then(handlerNoFilter)
 
     override suspend fun match(request: Request): RouterMatch = handlerNoFilter(request).let {
-        if (it.status != NOT_FOUND) MatchingHandler(filter.then { _: Request -> it }) else null
+        if (it.status != NOT_FOUND) MatchingHandler(filter.then(HttpHandler { _: Request -> it })) else null
     } ?: Unmatched
 
     override suspend fun invoke(request: Request): Response = handlerWithFilter(request)
 }
 
 internal data class AggregateRoutingHttpHandler(
-        private val list: List<RoutingHttpHandler>,
-        private val notFoundHandler: HttpHandler = routeNotFoundHandler,
+    private val list: List<RoutingHttpHandler>,
+    private val notFoundHandler: HttpHandler = routeNotFoundHandler,
     private val methodNotMatchedHandler: HttpHandler = routeMethodNotAllowedHandler) : RoutingHttpHandler {
 
     constructor(vararg list: RoutingHttpHandler) : this(list.toList())
@@ -80,32 +81,32 @@ internal data class AggregateRoutingHttpHandler(
     }
 
     override suspend fun match(request: Request): RouterMatch = list.asSequence()
-        .map { next -> next.match(request) }
+        .map { next -> runBlocking { next.match(request) } }
         .sorted()
         .firstOrNull() ?: Unmatched
 
     override fun withFilter(new: Filter): RoutingHttpHandler =
-            copy(list = list.map { it.withFilter(new) }, notFoundHandler = new.then(notFoundHandler), methodNotMatchedHandler = new.then(methodNotMatchedHandler))
+        copy(list = list.map { it.withFilter(new) }, notFoundHandler = new.then(notFoundHandler), methodNotMatchedHandler = new.then(methodNotMatchedHandler))
 
     override fun withBasePath(new: String): RoutingHttpHandler = copy(list = list.map { it.withBasePath(new) })
 }
 
 internal val routeNotFoundHandler = HttpHandler { Response(NOT_FOUND.description("Route not found")) }
 
-internal val routeMethodNotAllowedHandler: HttpHandler = { Response(METHOD_NOT_ALLOWED.description("Method not allowed")) }
+internal val routeMethodNotAllowedHandler = HttpHandler { Response(METHOD_NOT_ALLOWED.description("Method not allowed")) }
 
 internal data class TemplateRoutingHttpHandler(
-        private val method: Method?,
-        private val template: UriTemplate,
-        private val httpHandler: HttpHandler,
-        private val notFoundHandler: HttpHandler = routeNotFoundHandler,
+    private val method: Method?,
+    private val template: UriTemplate,
+    private val httpHandler: HttpHandler,
+    private val notFoundHandler: HttpHandler = routeNotFoundHandler,
     private val methodNotAllowedHandler: HttpHandler = routeMethodNotAllowedHandler) : RoutingHttpHandler {
 
     override suspend fun match(request: Request): RouterMatch =
-            if (template.matches(request.uri.path) ) {
+        if (template.matches(request.uri.path)) {
             when (method) {
-                null, request.method -> MatchingHandler { RoutedResponse(httpHandler(RoutedRequest(it, template)), template) }
-            else -> MethodNotMatched
+                null, request.method -> MatchingHandler(HttpHandler { RoutedResponse(httpHandler(RoutedRequest(it, template)), template) })
+                else -> MethodNotMatched
             }
         } else Unmatched
 
@@ -116,7 +117,7 @@ internal data class TemplateRoutingHttpHandler(
     }
 
     override fun withFilter(new: Filter): RoutingHttpHandler =
-            copy(httpHandler = new.then(httpHandler), notFoundHandler = new.then(notFoundHandler), methodNotAllowedHandler = new.then(methodNotAllowedHandler))
+        copy(httpHandler = new.then(httpHandler), notFoundHandler = new.then(notFoundHandler), methodNotAllowedHandler = new.then(methodNotAllowedHandler))
 
     override fun withBasePath(new: String): RoutingHttpHandler = copy(template = UriTemplate.from("$new/$template"))
 }

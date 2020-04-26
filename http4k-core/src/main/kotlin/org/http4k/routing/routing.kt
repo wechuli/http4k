@@ -28,7 +28,7 @@ interface Router {
 
 sealed class RouterMatch(private val priority: Int) : Comparable<RouterMatch> {
     data class MatchingHandler(private val httpHandler: HttpHandler) : RouterMatch(0), HttpHandler {
-        override fun invoke(request: Request): Response = httpHandler(request)
+        override suspend fun invoke(request: Request): Response = httpHandler(request)
     }
 
     object MethodNotMatched : RouterMatch(1)
