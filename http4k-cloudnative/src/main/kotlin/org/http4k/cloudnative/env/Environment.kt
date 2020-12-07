@@ -100,6 +100,8 @@ object EnvironmentKey : BiDiLensSpec<Environment, String>("env", ParamMeta.Strin
         }
     }
 ) {
+    object aws
+
     object k8s {
         operator fun <T> invoke(fn: k8s.() -> T): T = fn(this)
 
