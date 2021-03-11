@@ -2,6 +2,7 @@ package org.http4k.format
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.throws
 import org.http4k.core.Body
 import org.http4k.core.Response
 import org.http4k.core.Status.Companion.OK
@@ -49,6 +50,23 @@ class KlaxonAutoTest : AutoMarshallingJsonContract(Klaxon) {
     @Disabled("not supported by Klaxon")
     override fun `roundtrip custom boolean`() {
     }
+
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<List<ArbObject>>().toLens()
+
+        assertThat({ body(Response(OK).body(jsonWithNull)) }, throws<Exception>())
+    }
+
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list holder`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<ListHolder>().toLens()
+
+        assertThat({ body(Response(OK).body(jsonWithNull)).also { println(it) } }, throws<Exception>())
+    }
+
 }
 
 class KlaxonAutoEventsTest : AutoMarshallingEventsContract(Klaxon)

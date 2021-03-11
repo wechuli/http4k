@@ -4,8 +4,10 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.throws
 import org.http4k.core.Body
 import org.http4k.core.Response
+import org.http4k.core.Status
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.with
 import org.http4k.format.Gson.asA
@@ -48,8 +50,17 @@ class GsonAutoTest : AutoMarshallingJsonContract(Gson) {
     }
 
     @Test
+    @Disabled("GSON does not currently have Kotlin nullable support")
+    override fun `does not parse list of nulls into a non-nullable list`() {
+    }
+
+    @Test
     @Disabled("GSON does not currently have Kotlin class support")
     override fun `fails decoding when a required value is null`() {
+    }
+
+    @Disabled("GSON does not currently have Kotlin class support")
+    override fun `does not parse list of nulls into a non-nullable list holder`() {
     }
 
     override fun customMarshaller() = object : ConfigurableGson(GsonBuilder().asConfigurable().customise()) {}

@@ -239,6 +239,22 @@ class KotlinxSerializationAutoTest : AutoMarshallingJsonContract(KotlinxSerializ
         assertThat(body(Response(Status.OK).with(body of list)), equalTo(list))
     }
 
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<List<ArbObject>>().toLens()
+
+        assertThat({ body(Response(Status.OK).body(jsonWithNull)) }, throws<Exception>())
+    }
+
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list holder`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<ListHolder>().toLens()
+
+        assertThat({ body(Response(Status.OK).body(jsonWithNull)).also { println(it) } }, throws<Exception>())
+    }
+
     override fun customMarshaller(): AutoMarshalling =
         object : ConfigurableKotlinxSerialization({
             asConfigurable()

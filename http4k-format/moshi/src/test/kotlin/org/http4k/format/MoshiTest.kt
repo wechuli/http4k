@@ -2,6 +2,7 @@ package org.http4k.format
 
 import com.natpryce.hamkrest.assertion.assertThat
 import com.natpryce.hamkrest.equalTo
+import com.natpryce.hamkrest.throws
 import com.squareup.moshi.Moshi.Builder
 import org.http4k.core.Body
 import org.http4k.core.Response
@@ -39,6 +40,22 @@ class MoshiAutoTest : AutoMarshallingJsonContract(Moshi) {
         val actual = Moshi.asA<Array<ArbObject>>(jsonString)
         val expected = arrayOf(obj)
         assertThat(actual.toList().toString(), actual.toList(), equalTo(expected.toList()))
+    }
+
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<List<ArbObject>>().toLens()
+
+        assertThat({ body(Response(OK).body(jsonWithNull)).also { println(it) } }, throws<Exception>())
+    }
+
+    @Test
+    override fun `does not parse list of nulls into a non-nullable list holder`() {
+        val jsonWithNull = """[null]"""
+        val body = Body.auto<ListHolder>().toLens()
+
+        assertThat({ body(Response(OK).body(jsonWithNull)).also { println(it) } }, throws<Exception>())
     }
 
     override fun customMarshaller() = object : ConfigurableMoshi(Builder().asConfigurable().customise()) {}
